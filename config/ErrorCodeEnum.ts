@@ -1,0 +1,4 @@
+export enum ErrorCode {
+  USER_PASSWORD_FAILED = 10010,
+  USER_USERNAME_FAILED = 10011,
+}
