@@ -1,6 +1,18 @@
-## 从 0-1 搭建一个 nestjs + mysql/typeORM 系统
+# 从 0-1 搭建一个 nestjs + mysql/typeORM 系统
 
-### 搭建目录结构
+
+## 目标
+
+- 分成多个服务✅
+- 登录鉴权✅
+- 统一报错，正常返回格式拦截过滤器✅
+- 添加swagger文档并跟进书写✍️
+- 加入redis缓存机制❎
+- 加入winston进行日志手机❎
+- 加入定时任务node-schedule❎
+- 加入oss文件上传❎
+
+## 搭建目录结构
 
 - enter cmd , input nest new (your application name) , and choose pnpm install that
 - nest g(generate) app(application) xxx , this allow us to keep our apps in separate folders, that's is 'monorepo';
