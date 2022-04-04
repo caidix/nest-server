@@ -1,5 +1,5 @@
 export interface JwtPayloadToken {
   name: string;
-  userId: number;
+  id: number;
   roleId: number;
 }

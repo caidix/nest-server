@@ -22,12 +22,11 @@ export class User {
   @Column({
     nullable: true,
     length: 100,
-    select: false,
     comment: '密码',
   })
   password: string;
 
-  @Column({ select: false, comment: '邮箱' })
+  @Column({ select: false, comment: '邮箱', length: 500 })
   email: string;
 
   @Column({ default: '', comment: '手机号' })

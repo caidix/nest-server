@@ -1,13 +1,29 @@
 import type { User } from '@libs/db/entity/UserEntity';
-import { Body, Controller, Inject, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Inject,
+  Post,
+  Req,
+  Session,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from 'libs/common/decorator/current-user.decorator';
+import { returnClient } from 'libs/common/return/returnClient';
+import { AuthService } from '../auth/auth.service';
 import { CreateUserDto } from './dto/CreatUserDto';
+import { LoginUserDto } from './dto/LoginUserDto';
 import { UserService } from './user.service';
 
 @Controller('user')
 @ApiTags('users')
 export class UserController {
-  constructor(@Inject(UserService) private readonly userService: UserService) {}
+  constructor(
+    @Inject(UserService) private readonly userService: UserService,
+    @Inject(AuthService) private readonly authService: AuthService,
+  ) {}
 
   @Post('register')
   @ApiOperation({
@@ -42,7 +58,21 @@ export class UserController {
   }
 
   @Post('login')
-  public async login() {
-    return {};
+  @ApiOperation({
+    summary: '测试登录',
+  })
+  @UseGuards(AuthGuard('local'))
+  public async login(@Body() params: LoginUserDto, @CurrentUser() user) {
+    try {
+      console.log({ params, user });
+      if (user) {
+        const token = await this.authService.creatToken({
+          name: params.name,
+          id: user.id,
+        });
+        return returnClient('登录成功', 200, { token });
+      }
+    } catch (error) {}
+    return { params };
   }
 }

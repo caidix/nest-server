@@ -2,9 +2,12 @@ import { Role } from '@libs/db/entity/RoleEntity';
 import { User } from '@libs/db/entity/UserEntity';
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ApiException } from 'libs/common/exception/ApiException';
+import { ErrorCodeEnum } from 'libs/common/utils/errorCodeEnum';
 import { Repository } from 'typeorm';
-import { formatDate } from 'utils/dataTime';
+import { formatDate } from 'libs/common/utils/dataTime';
 import { CreateUserDto } from './dto/CreatUserDto';
+import { LoginUserDto } from './dto/LoginUserDto';
 
 @Injectable()
 export class UserService {
@@ -101,5 +104,20 @@ export class UserService {
         isDelete: 0,
       })
       .getOne();
+  }
+
+  /**
+   * 用户登录
+   * @param params
+   */
+  public async login(userName: string) {
+    try {
+      return await this.userRepository
+        .createQueryBuilder('u')
+        .where('u.name = :name', { name: userName })
+        .getOne();
+    } catch (e) {
+      throw new ApiException('登录失败', 200, ErrorCodeEnum.NO_FIND_USER);
+    }
   }
 }

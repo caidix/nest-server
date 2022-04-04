@@ -12,7 +12,7 @@ const models = TypeOrmModule.forFeature([User, Organization, Role, Authority]);
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: [envConfig.path] }),
+    // 公共接入MYSQL数据库
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

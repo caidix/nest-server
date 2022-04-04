@@ -20,8 +20,8 @@ export class AuthService {
    * 用户验证
    * @param user
    */
-  async validateUser(user: JwtPayloadToken): Promise<User> {
-    return await this.userService.findOneByName(user.name);
+  async validateUser(username: string): Promise<User> {
+    return await this.userService.login(username);
   }
 
   /**
@@ -36,7 +36,7 @@ export class AuthService {
    * 产生token
    * @param user
    */
-  async creatToken(user: JwtPayloadToken): Promise<any> {
+  async creatToken(user: { name: string; id: any }): Promise<any> {
     const expiration = 60 * 60;
     const accessToken = await this.jwtService.sign(user, {
       expiresIn: expiration,

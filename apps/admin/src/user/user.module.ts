@@ -9,7 +9,7 @@ import { UserService } from './user.service';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Role, User]),
-    forwardRef(() => AuthModule),
+    forwardRef(() => AuthModule), // 循环依赖， 引入auth
   ],
   controllers: [UserController],
   providers: [UserService],

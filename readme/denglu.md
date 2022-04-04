@@ -10,6 +10,31 @@ pnpm add @nestjs/passport passport passport-local passport-jwt bcryptjs
 pnpm add @types/passport @types/passport-jwt @types/passport-local -D
 ```
 
+接下来我们需要书写拦截器，也就是下面所说的策略类，来为我们的登录生成jwt和接口鉴权提供帮助.
+我们知道拦截器的作用有下面几点：
+
+- 在函数执行之前/之后绑定额外的逻辑
+- 转换从函数返回的结果
+- 转换从函数抛出的异常
+- 扩展基本函数行为
+- 根据所选条件完全重写函数 (例如, 缓存目的)
+
+这类被看作在接口调用前后做处理的函数，在nest中需要添加@Injectable装饰器，他能告诉nest被装饰的函数是需要被注入的，同时nest会在构造函数中声明依赖。比如在constructor内注入某个service时， 如果这个类没有增加@Injectable装饰器, 它是无法获取到依赖的服务的。例如
+
+```js
+// @Injectable 装饰的类 都是Providers ，他们都可以通过 constructor 注入依赖关系
+// @Injectable() 不使用Injectable
+export class XXXX extends PassportStrategy(Strategy) {
+  constructor(private readonly authService: AuthService) { }
+  async validate(payload: string, done: any) {
+    // 报错，无法找到this.authService实例
+    const user = await this.authService.validateUser(payload);
+  }
+}
+```
+
+下面我们就来书写登录前置的demo
+
 ## 创建本地登录、token策略类
 
 > 创建一个文件来书写策略，这里命名为 local.strategy.ts
@@ -102,7 +127,8 @@ export class XXController {
 }
 ```
 
-> 接下来我们为swagger增加 填写 bearer token的功能
+> 接下来我们为swagger增加 填写 bearer token的功能..
+
 ```js
 // main.ts
 const options = new DocumentBuilder()
@@ -171,7 +197,6 @@ export const CurrentUser = createParamDecorator((data, ctx: ExecutionContext) =>
   return req.user
 })
 ```
-
 
 ## 使用策略
 

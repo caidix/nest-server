@@ -55,5 +55,8 @@
 ### JWT
 
 ```js
- pnpm i @nestjs/jwt passport passport-jwt passport-http-bearer bcryptjs
+//  pnpm i @nestjs/jwt passport passport-jwt passport-http-bearer bcryptjs
+pnpm add @nestjs/passport passport passport-local passport-jwt
+// 类型提示
+pnpm add @types/passport @types/passport-jwt @types/passport-local -D
 ```

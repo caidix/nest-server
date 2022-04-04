@@ -2,7 +2,7 @@ import { Role } from '@libs/db/entity/RoleEntity';
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { formatDate } from 'utils/dataTime';
+import { formatDate } from 'libs/common/utils/dataTime';
 import { CreateRoleDto } from './dto/CreateRoleDto';
 
 @Injectable()
