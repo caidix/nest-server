@@ -2,12 +2,14 @@ import type { User } from '@libs/db/entity/UserEntity';
 import {
   Body,
   Controller,
+  Get,
   Inject,
   Post,
   Req,
   Session,
   UseGuards,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'libs/common/decorator/current-user.decorator';
@@ -23,6 +25,7 @@ export class UserController {
   constructor(
     @Inject(UserService) private readonly userService: UserService,
     @Inject(AuthService) private readonly authService: AuthService,
+    @Inject(ConfigService) private readonly configService: ConfigService,
   ) {}
 
   @Post('register')
@@ -59,20 +62,31 @@ export class UserController {
 
   @Post('login')
   @ApiOperation({
-    summary: '测试登录',
+    summary: '测试登录 jwt生成， redis单点验证',
   })
   @UseGuards(AuthGuard('local'))
   public async login(@Body() params: LoginUserDto, @CurrentUser() user) {
     try {
-      console.log({ params, user });
       if (user) {
+        const { name, id } = user;
         const token = await this.authService.creatToken({
-          name: params.name,
-          id: user.id,
+          name,
+          id,
+        });
+        await this.authService.createRedisByToken({
+          name,
+          id,
+          token: token.accessToken,
         });
         return returnClient('登录成功', 200, { token });
       }
     } catch (error) {}
     return { params };
+  }
+
+  @Get('test')
+  public async test() {
+    console.log({ configService: this.configService, pre: process.env.SECRET });
+    return {};
   }
 }

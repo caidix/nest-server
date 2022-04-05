@@ -61,6 +61,14 @@ export class User {
   @Column({ default: false, comment: '是否完成身份验证' })
   verification: boolean;
 
+  // 全部采用string而不用Date类型的原因是为了节省前端还需要转格式的麻烦过程
+  // 也可以这么写
+  // @Column({
+  //   name: 'update_time',
+  //   type: 'timestamp',
+  //   default: () => 'CURRENT_TIMESTAMP',
+  // })
+  // updateTime: Date;
   @Column({ default: '', nullable: true })
   crateTime: string;
 

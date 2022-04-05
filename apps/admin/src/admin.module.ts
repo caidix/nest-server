@@ -5,10 +5,11 @@ import { UserModule } from './user/user.module';
 import { RoleModule } from './role/role.module';
 import { CommonModule } from 'libs/common';
 import { AuthModule } from './auth/auth.module';
+import { RedisCacheService } from './redis/redis.service';
 
 @Module({
   imports: [CommonModule, AuthModule, UserModule, RoleModule],
   controllers: [AdminController],
-  providers: [AdminService],
+  providers: [AdminService, RedisCacheService],
 })
 export class AdminModule {}

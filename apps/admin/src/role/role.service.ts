@@ -2,7 +2,7 @@ import { Role } from '@libs/db/entity/RoleEntity';
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { formatDate } from 'libs/common/utils/dataTime';
+import dayjs from 'dayjs';
 import { CreateRoleDto } from './dto/CreateRoleDto';
 
 @Injectable()
@@ -16,8 +16,8 @@ export class RoleService {
       newRole.name = role.name;
       newRole.desc = role.desc;
       newRole.code = role.code;
-      newRole.crateTime = formatDate();
-      newRole.updateTime = formatDate();
+      newRole.crateTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
+      newRole.updateTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
       return await this.roleRepository.save(newRole);
     } catch (e) {
       throw new HttpException('添加失败', 200);

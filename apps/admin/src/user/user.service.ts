@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ApiException } from 'libs/common/exception/ApiException';
 import { ErrorCodeEnum } from 'libs/common/utils/errorCodeEnum';
 import { Repository } from 'typeorm';
-import { formatDate } from 'libs/common/utils/dataTime';
+import dayjs from 'dayjs';
 import { CreateUserDto } from './dto/CreatUserDto';
 import { LoginUserDto } from './dto/LoginUserDto';
 
@@ -34,8 +34,8 @@ export class UserService {
         .into(User)
         .values([
           {
-            crateTime: formatDate(),
-            updateTime: formatDate(),
+            crateTime: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+            updateTime: dayjs().format('YYYY-MM-DD HH:mm:ss'),
             password: user.password,
             name: user.name,
             desc: user.desc,

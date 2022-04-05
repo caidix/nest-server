@@ -94,7 +94,7 @@ import { JwtModule } from '@nestjs/jwt';
     JwtModule.registerAsync({
       useFactory() {
         return {
-          secret: process.env.SECRET,
+          secret: process.env.JWT_SECRET,
         };
       },
     }),
