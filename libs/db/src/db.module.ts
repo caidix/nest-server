@@ -12,6 +12,7 @@ const models = TypeOrmModule.forFeature([User, Organization, Role, Authority]);
 
 @Module({
   imports: [
+    // 接入redis， 得安装才跑得起来噢！
     RedisModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
