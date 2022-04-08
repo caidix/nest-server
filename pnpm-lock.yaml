@@ -34,6 +34,7 @@ specifiers:
   jest: ^27.2.5
   mysql2: ^2.3.3
   nest-winston: ^1.6.2
+  nodemailer: ^6.7.3
   passport: ^0.5.2
   passport-jwt: ^4.0.0
   passport-local: ^1.0.0
@@ -70,6 +71,7 @@ dependencies:
   ioredis: registry.npmmirror.com/ioredis/5.0.3
   mysql2: 2.3.3
   nest-winston: registry.npmmirror.com/nest-winston/1.6.2_f2412c17e79b59825b7154220113b84e
+  nodemailer: registry.npmmirror.com/nodemailer/6.7.3
   passport: registry.npmmirror.com/passport/0.5.2
   passport-jwt: registry.npmmirror.com/passport-jwt/4.0.0
   passport-local: registry.npmmirror.com/passport-local/1.0.0
@@ -6268,6 +6270,13 @@ packages:
     engines: {node: 4.x || >=6.0.0}
     dependencies:
       whatwg-url: registry.npmmirror.com/whatwg-url/5.0.0
+    dev: false
+
+  registry.npmmirror.com/nodemailer/6.7.3:
+    resolution: {integrity: sha512-KUdDsspqx89sD4UUyUKzdlUOper3hRkDVkrKh/89G+d9WKsU5ox51NWS4tB1XR5dPUdR4SP0E3molyEfOvSa3g==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/nodemailer/-/nodemailer-6.7.3.tgz}
+    name: nodemailer
+    version: 6.7.3
+    engines: {node: '>=6.0.0'}
     dev: false
 
   registry.npmmirror.com/one-time/1.0.0:

@@ -8,7 +8,7 @@ import { Repository } from 'typeorm';
 import dayjs from 'dayjs';
 import { CreateUserDto } from './dto/CreatUserDto';
 import { LoginUserDto } from './dto/LoginUserDto';
-
+// https://typeorm.biunav.com/zh/select-query-builder.html#%E4%BB%80%E4%B9%88%E6%98%AFquerybuilder
 @Injectable()
 export class UserService {
   constructor(
@@ -19,9 +19,9 @@ export class UserService {
   public async createUser(user: CreateUserDto) {
     let role;
     try {
-      role = await this.roleRepository
-        .createQueryBuilder('r')
-        .where('r.id = :id', { id: user.roleId || 0 })
+      role = await this.roleRepository // 使用 repository 创建Query Builder
+        .createQueryBuilder('r') // 查找role实体， r为SQL 别名. SQL 查询中，Role是表名，r是我们分配给该表的别名。
+        .where('r.id = :id', { id: user.roleId || 0 }) //　等同　WHERE role.id = user.roleId || 0. 你多次使用.where，你将覆盖所有以前的WHERE表达式,这时候需要使用andWhere
         .getOne();
     } catch (e) {
       console.log('角色不在');
@@ -33,6 +33,7 @@ export class UserService {
         .insert()
         .into(User)
         .values([
+          // 数组形式可以同时添加多个，也可以用object只添加单个
           {
             crateTime: dayjs().format('YYYY-MM-DD HH:mm:ss'),
             updateTime: dayjs().format('YYYY-MM-DD HH:mm:ss'),
@@ -59,25 +60,29 @@ export class UserService {
 
   // 查找指定用户
   public async findSpecifiedUser(name: string) {
-    const queryConditionList = ['u.isDelete = :isDelete', 'u.name = :name'];
+    const queryConditionList = [
+      'user.isDelete = :isDelete',
+      'user.name = :name',
+    ];
     const leftJoinConditionList = [];
     const leftJoinConditionOrganizations = {};
     const queryCondition = queryConditionList.join(' AND ');
     const leftJoinCondition = leftJoinConditionList.join('');
     return await this.userRepository
-      .createQueryBuilder('u')
-      .leftJoinAndSelect('u.role', 'r')
+      .createQueryBuilder('user') // 参数别名　user
+      .leftJoinAndSelect('user.role', 'r') // 自动加载了 user 的 role. 第一个参数是你要加载的关系，第二个参数是你为此关系的表分配的别名
       .leftJoinAndSelect(
-        'u.organizations',
+        'user.organizations',
         'org',
         leftJoinCondition,
-        leftJoinConditionOrganizations,
+        leftJoinConditionOrganizations, // 也可以在leftJoinAndSelect中添加表达式，它相当于为你使用了where
       )
       .where(queryCondition, {
         name,
         isDelete: 0,
       })
       .getOne();
+    // LEFT JOIN和INNER JOIN之间的区别在于，如果没有任何 photos，INNER JOIN将不会返回 user。 即使没有 photos，LEFT JOIN也会返回 user。
   }
 
   /**
@@ -119,5 +124,33 @@ export class UserService {
     } catch (e) {
       throw new ApiException('登录失败', 200, ErrorCodeEnum.NO_FIND_USER);
     }
+  }
+
+  /**发送邮件 */
+  public async sendMailer() {
+    // let transporter: any = null;
+    // return new Promise((resolve, reject) => {
+    //   try {
+    //     transporter = nodemailer.createTransport({
+    //       // host: 'smtp.ethereal.email',
+    //       service: 'QQ', // 使用了内置传输发送邮件 查看支持列表：https://nodemailer.com/smtp/well-known/
+    //       port: 465, // SMTP 端口
+    //       secureConnection: false, // 使用了 SSL
+    //       auth: {
+    //         user: emailConfig.user,
+    //         pass: emailConfig.authPass,
+    //         // pass: 'mlemxnogjqcfecba',
+    //       },
+    //     });
+    //   } catch (e) {
+    //     reject(e);
+    //   }
+    //   transporter.sendMail(mailOptions, (error, info) => {
+    //     if (error) {
+    //       reject(error);
+    //     }
+    //     resolve(true);
+    //   });
+    // });
   }
 }

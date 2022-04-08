@@ -13,6 +13,7 @@
 - 加入oss文件上传❎
 - 加入kafka❎
 - 加入websocket❎
+- 加入nodemailer, 写一个发邮件的小函数✅
 
 ## 搭建目录结构
 

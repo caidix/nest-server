@@ -39,6 +39,7 @@
     "ioredis": "^5.0.3",
     "mysql2": "^2.3.3",
     "nest-winston": "^1.6.2",
+    "nodemailer": "^6.7.3",
     "passport": "^0.5.2",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
