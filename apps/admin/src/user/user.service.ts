@@ -3,6 +3,7 @@ import { Repository } from 'typeorm';
 import dayjs from 'dayjs';
 import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import fetch from 'node-fetch';
 
 // Entity Service
 import { Role } from '@libs/db/entity/RoleEntity';
@@ -187,6 +188,7 @@ export class UserService {
   /* 生成验证码并发送邮件 */
   public async sendMailerByCode(email: string, userName: string) {
     const code = createVerificationCode(6);
+    const tuwei = await this.tuwei();
     const emailOptions: MailerOptions = {
       from: `"进场认证" <${this.configService.get('EMAIL_USER', '')}>`, // 发件人 邮箱  '昵称<发件人邮箱>'
       to: email, // 这个是前端页面注册时输入的邮箱号
@@ -194,7 +196,7 @@ export class UserService {
       html: setEmailContent(
         userName,
         'http://cd-blog.oss-cn-shenzhen.aliyuncs.com/9e55e91c318d4bb445ba4d2f75d5ca08.jpg',
-        '前端大佬带带我吧',
+        tuwei,
         code,
       ),
     };
@@ -223,5 +225,31 @@ export class UserService {
       this.redisCacheService.del(email);
     }
     return res;
+  }
+
+  /* 土味情话搞里头 */
+  public async tuwei() {
+    return await fetch('https://chp.shadiao.app/api.php', {
+      headers: {
+        accept:
+          'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        'accept-language': 'zh-CN,zh;q=0.9',
+        'cache-control': 'no-cache',
+        pragma: 'no-cache',
+        'sec-ch-ua':
+          '"Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-fetch-dest': 'document',
+        'sec-fetch-mode': 'navigate',
+        'sec-fetch-site': 'none',
+        'sec-fetch-user': '?1',
+        'upgrade-insecure-requests': '1',
+      },
+      referrerPolicy: 'strict-origin-when-cross-origin',
+      body: null,
+      method: 'GET',
+    })
+      .then((res) => res.text())
+      .then((json) => json);
   }
 }
