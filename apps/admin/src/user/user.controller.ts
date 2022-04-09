@@ -14,8 +14,10 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'libs/common/decorator/current-user.decorator';
 import { returnClient } from 'libs/common/return/returnClient';
+import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
 import { AuthService } from '../auth/auth.service';
 import { CreateUserDto } from './dto/CreatUserDto';
+import { CreateEmailDto, VerifyEmailDto } from './dto/EmailDto';
 import { LoginUserDto } from './dto/LoginUserDto';
 import { UserService } from './user.service';
 
@@ -78,7 +80,7 @@ export class UserController {
           id,
           token: token.accessToken,
         });
-        return returnClient('登录成功', 200, { token });
+        return returnClient('登录成功', ApiCodeEnum.SUCCESS, { token });
       }
     } catch (error) {}
     return { params };
@@ -88,5 +90,32 @@ export class UserController {
   public async test() {
     console.log({ configService: this.configService, pre: process.env.SECRET });
     return {};
+  }
+
+  @Post('sendEmailer')
+  @ApiOperation({
+    summary: '发送邮箱验证码',
+  })
+  public async sendEmailerCode(@Body() { email, name }: CreateEmailDto) {
+    const res = await this.userService.sendMailerByCode(email, name);
+    return returnClient('发送成功', ApiCodeEnum.SUCCESS, res);
+  }
+
+  @Post('verifyCode')
+  @ApiOperation({
+    summary: '校验邮箱验证码',
+  })
+  public async verifyEmailCode(@Body() { email, value }: VerifyEmailDto) {
+    const res = await this.userService.verifyEmailerCode(email, value);
+    if (res) {
+      return returnClient('验证通过', ApiCodeEnum.SUCCESS, { verify: res });
+    }
+    return returnClient(
+      '验证码有误，请重新输入',
+      ApiCodeEnum.MAILER_COMPILE_ERROR,
+      {
+        verify: res,
+      },
+    );
   }
 }

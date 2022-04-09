@@ -148,7 +148,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from './AuthService';
 import {JwtPayloadToken} from './interfaces/JwtPayloadJwtPayloadInterfface';
 import {ApiException} from '../error/exceptions/ApiException';
-import {ApiErrorCode} from '../../config/ApiErrorCodeEnum';
+import {ApiErrorCode} from '../../config/ApiApiCodeEnum';
 
 @Injectable()
 export class AuthStrategy extends PassportStrategy(Strategy) {

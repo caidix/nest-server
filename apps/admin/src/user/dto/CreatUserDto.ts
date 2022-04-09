@@ -6,7 +6,7 @@ import {
   Max,
   IsNotEmpty,
 } from 'class-validator';
-// import { ApiErrorCode } from '../../../config/ApiErrorCodeEnum';
+// import { ApiErrorCode } from '../../../config/ApiApiCodeEnum';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDto {

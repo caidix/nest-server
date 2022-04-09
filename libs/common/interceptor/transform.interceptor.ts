@@ -29,11 +29,12 @@ export class TransformInterceptor<T>
     next: CallHandler<T>,
   ): Observable<Response<T>> {
     return next.handle().pipe(
-      map((data, res) => {
-        const { message, code } = res as any as ResProps;
+      map((ctx, res) => {
+        const { code, message, data, status } = ctx as any as ResProps;
         return {
-          data,
           code,
+          data,
+          status,
           message: message || '请求成功',
         };
       }),

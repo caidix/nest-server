@@ -7,7 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { ApiException } from '../exception/ApiException';
-import { ErrorCodeEnum } from '../utils/errorCodeEnum';
+import { ApiCodeEnum } from '../utils/apiCodeEnum';
 
 /**
  * 拦截错误返回统一响应体
@@ -38,7 +38,7 @@ export class ReturnClientFilter implements ExceptionFilter {
     response.send({
       data: {},
       message: exception.message,
-      code: ErrorCodeEnum.PUBLIC_ERROR,
+      code: ApiCodeEnum.PUBLIC_ERROR,
       url: request.originalUrl,
     });
   }

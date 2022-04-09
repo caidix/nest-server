@@ -1,19 +1,40 @@
-import { Role } from '@libs/db/entity/RoleEntity';
-import { User } from '@libs/db/entity/UserEntity';
-import { HttpException, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { ApiException } from 'libs/common/exception/ApiException';
-import { ErrorCodeEnum } from 'libs/common/utils/errorCodeEnum';
+import * as nodemailer from 'nodemailer';
 import { Repository } from 'typeorm';
 import dayjs from 'dayjs';
+import { HttpException, Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+
+// Entity Service
+import { Role } from '@libs/db/entity/RoleEntity';
+import { User } from '@libs/db/entity/UserEntity';
+import { ConfigService } from '@nestjs/config';
+import { RedisCacheService } from '../redis/redis.service';
+
+// Dto
 import { CreateUserDto } from './dto/CreatUserDto';
 import { LoginUserDto } from './dto/LoginUserDto';
+
+// Utils
+import { ApiException } from 'libs/common/exception/ApiException';
+import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
+import { createVerificationCode, setEmailContent } from 'libs/common/utils';
+
 // https://typeorm.biunav.com/zh/select-query-builder.html#%E4%BB%80%E4%B9%88%E6%98%AFquerybuilder
+
+type MailerOptions = {
+  from: string;
+  to: string;
+  subject: string;
+  html: string;
+};
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(Role) private readonly roleRepository: Repository<Role>,
+    @Inject(ConfigService) private readonly configService: ConfigService,
+    @Inject(RedisCacheService)
+    private readonly redisCacheService: RedisCacheService,
   ) {}
 
   public async createUser(user: CreateUserDto) {
@@ -122,35 +143,85 @@ export class UserService {
         .where('u.name = :name', { name: userName })
         .getOne();
     } catch (e) {
-      throw new ApiException('登录失败', 200, ErrorCodeEnum.NO_FIND_USER);
+      throw new ApiException('登录失败', 200, ApiCodeEnum.NO_FIND_USER);
     }
   }
 
-  /**发送邮件 */
-  public async sendMailer() {
-    // let transporter: any = null;
-    // return new Promise((resolve, reject) => {
-    //   try {
-    //     transporter = nodemailer.createTransport({
-    //       // host: 'smtp.ethereal.email',
-    //       service: 'QQ', // 使用了内置传输发送邮件 查看支持列表：https://nodemailer.com/smtp/well-known/
-    //       port: 465, // SMTP 端口
-    //       secureConnection: false, // 使用了 SSL
-    //       auth: {
-    //         user: emailConfig.user,
-    //         pass: emailConfig.authPass,
-    //         // pass: 'mlemxnogjqcfecba',
-    //       },
-    //     });
-    //   } catch (e) {
-    //     reject(e);
-    //   }
-    //   transporter.sendMail(mailOptions, (error, info) => {
-    //     if (error) {
-    //       reject(error);
-    //     }
-    //     resolve(true);
-    //   });
-    // });
+  /* 发送邮件 */
+  public async sendMailer(mailOptions: MailerOptions) {
+    let transporter: any = null;
+    return new Promise((resolve, reject) => {
+      console.log(this.configService.get('EMAIL_PASS', ''));
+      try {
+        transporter = nodemailer.createTransport({
+          host: 'smtp.qq.com',
+          service: 'QQ', // 使用了内置传输发送邮件 查看支持列表：https://nodemailer.com/smtp/well-known/
+          port: 465, // SMTP 端口 ，默认情况下为587，如果设置secure为true时则默认为465.
+          // secureConnection: false, // 使用了 SSL
+          secure: true,
+          auth: {
+            user: this.configService.get('EMAIL_USER', ''),
+            pass: this.configService.get('EMAIL_PASS', ''),
+            // pass: 'mlemxnogjqcfecba',
+          },
+        });
+      } catch (e) {
+        reject(e);
+      }
+      transporter.verify((err, suc) => {
+        if (err) {
+          console.log({ err });
+        } else {
+          console.log('授权成功');
+        }
+      });
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          reject(error);
+        }
+        resolve(true);
+      });
+    });
+  }
+
+  /* 生成验证码并发送邮件 */
+  public async sendMailerByCode(email: string, userName: string) {
+    const code = createVerificationCode(6);
+    const emailOptions: MailerOptions = {
+      from: `"进场认证" <${this.configService.get('EMAIL_USER', '')}>`, // 发件人 邮箱  '昵称<发件人邮箱>'
+      to: email, // 这个是前端页面注册时输入的邮箱号
+      subject: `感谢${userName}注册全国最大的南桐俱乐部！`,
+      html: setEmailContent(
+        userName,
+        'http://cd-blog.oss-cn-shenzhen.aliyuncs.com/9e55e91c318d4bb445ba4d2f75d5ca08.jpg',
+        '前端大佬带带我吧',
+        code,
+      ),
+    };
+
+    try {
+      const res = await this.sendMailer(emailOptions);
+      await this.redisCacheService.set(email, code, 3 * 60 * 1000); // 5分钟内有效
+      return res;
+    } catch (error) {
+      throw new ApiException(error.message, 200, ApiCodeEnum.SEND_MAILER_ERROR);
+    }
+  }
+
+  /* 校验邮箱发送的验证码 */
+  public async verifyEmailerCode(email: string, code: string) {
+    const currentCode = await this.redisCacheService.get(email);
+    if (!currentCode) {
+      throw new ApiException(
+        '验证码已过期，请重新发送',
+        200,
+        ApiCodeEnum.SEND_MAILER_ERROR,
+      );
+    }
+    const res = currentCode === code;
+    if (res) {
+      this.redisCacheService.del(email);
+    }
+    return res;
   }
 }

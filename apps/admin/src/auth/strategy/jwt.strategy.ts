@@ -2,7 +2,7 @@ import { Strategy, StrategyOptions, ExtractJwt } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { AuthService } from '../auth.service';
 import { JwtPayloadToken } from '../types/JwtPayloadJwtPayloadInterface';
-import { ErrorCodeEnum } from 'libs/common/utils/errorCodeEnum';
+import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
 import { ApiException } from 'libs/common/exception/ApiException';
 import { Injectable } from '@nestjs/common';
 
@@ -29,13 +29,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new ApiException(
         '您账户已经在另一处登陆，请重新登陆',
         400,
-        ErrorCodeEnum.USER_LOGGED,
+        ApiCodeEnum.USER_LOGGED,
       );
     }
 
     if (!user || user.id !== Number(id)) {
       return done(
-        new ApiException('token无效', 400, ErrorCodeEnum.TOKEN_OVERDUE),
+        new ApiException('token无效', 400, ApiCodeEnum.TOKEN_OVERDUE),
         false,
       );
     }
