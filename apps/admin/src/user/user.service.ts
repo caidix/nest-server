@@ -245,7 +245,6 @@ export class UserService {
         'sec-fetch-user': '?1',
         'upgrade-insecure-requests': '1',
       },
-      referrerPolicy: 'strict-origin-when-cross-origin',
       body: null,
       method: 'GET',
     })
