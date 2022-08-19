@@ -1,6 +1,7 @@
 import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Role } from './RoleEntity';
 
+/** 用户组管理 */
 @Entity()
 export class Authority {
   @PrimaryGeneratedColumn()

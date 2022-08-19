@@ -17,8 +17,8 @@ import { ApiException } from 'libs/common/exception/ApiException';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('role')
-@ApiBearerAuth()
 @ApiTags('role')
+@ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
 export class RoleController {
   constructor(@Inject(RoleService) private readonly roleService: RoleService) {}

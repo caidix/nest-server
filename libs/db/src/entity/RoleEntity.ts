@@ -9,25 +9,30 @@ import {
 import { Authority } from './AuthorityEntity';
 import { User } from './UserEntity';
 
+/** 角色表 */
 @Entity()
 export class Role {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 500 })
+  @Column({ length: 500, unique: true })
   name: string;
 
-  @Column('text', { nullable: true })
+  @Column({ length: 500, nullable: true })
   desc: string;
 
-  @Column()
+  @Column({
+    length: 50,
+    unique: true,
+  })
   code: string;
 
-  @ManyToMany((type) => Authority, (authority) => authority.roles)
+  @ManyToMany(() => Authority, (authority) => authority.roles)
   @JoinTable()
   authority: Authority[];
 
-  @OneToMany((type) => User, (user) => user.role)
+  @ManyToMany(() => User, (user) => user.roles)
+  @JoinTable()
   users: User[];
 
   @Column({ default: 0 })

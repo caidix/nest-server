@@ -2,13 +2,25 @@ import { User } from './entity/UserEntity';
 import { Organization } from './entity/OrganizationEntity';
 import { Role } from './entity/RoleEntity';
 import { Authority } from './entity/AuthorityEntity';
+import { MenuAction } from './entity/MenuActionEntity';
+import { System } from './entity/SystemEntity';
+import { SystemMenu } from './entity/SystemMenuEntity';
 
 import { Module } from '@nestjs/common';
 import { DbService } from './db.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
-const models = TypeOrmModule.forFeature([User, Organization, Role, Authority]);
+
+const models = TypeOrmModule.forFeature([
+  User,
+  Organization,
+  Role,
+  Authority,
+  MenuAction,
+  System,
+  SystemMenu,
+]);
 
 @Module({
   imports: [

@@ -17,9 +17,9 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
   // 我们就需要在validate里写验证的逻辑，它代表如何去校验这个策略
   async validate(name: string, password: string) {
     const user = await this.authService.validateUser(name);
-    console.log({ user });
+
     if (!user) {
-      throw new BadRequestException('用户名或密码不正确1');
+      throw new BadRequestException('用户名或密码不正确1 - 用户不存在');
     }
     if (password !== user.password) {
       throw new BadRequestException('用户名或密码不正确2');

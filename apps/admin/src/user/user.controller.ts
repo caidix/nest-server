@@ -6,12 +6,13 @@ import {
   Inject,
   Post,
   Req,
+  Res,
   Session,
   UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'libs/common/decorator/current-user.decorator';
 import { returnClient } from 'libs/common/return/returnClient';
 import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
@@ -68,23 +69,44 @@ export class UserController {
     summary: '测试登录 jwt生成， redis单点验证',
   })
   @UseGuards(AuthGuard('local'))
-  public async login(@Body() params: LoginUserDto, @CurrentUser() user) {
+  public async login(
+    @Body() params: LoginUserDto,
+    @CurrentUser() user,
+    @Res({ passthrough: true }) response,
+  ) {
     try {
       if (user) {
         const { name, id } = user;
+        const userDetail = await this.userService.findOneByName(name);
         const token = await this.authService.creatToken({
           name,
           id,
         });
+
+        /** redis缓存并将token打入cookie */
         await this.authService.createRedisByToken({
           name,
           id,
           token: token.accessToken,
         });
-        return returnClient('登录成功', ApiCodeEnum.SUCCESS, { token });
+        response.cookie('sessionId', token.accessToken);
+        return returnClient('登录成功', ApiCodeEnum.SUCCESS, {
+          token,
+          user: userDetail,
+        });
       }
     } catch (error) {}
     return { params };
+  }
+
+  @Post('get-user-info')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  public async getUserDetail(@CurrentUser() user) {
+    console.log(user);
+    const { id } = user;
+    const res = await this.userService.findOneById(id);
+    return returnClient('获取用户信息成功', ApiCodeEnum.SUCCESS, res);
   }
 
   @Get('test')
@@ -141,7 +163,6 @@ export class UserController {
         'sec-fetch-user': '?1',
         'upgrade-insecure-requests': '1',
       },
-      referrerPolicy: 'strict-origin-when-cross-origin',
       body: null,
       method: 'GET',
     })

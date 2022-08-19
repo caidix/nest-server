@@ -35,6 +35,7 @@ export class ReturnClientFilter implements ExceptionFilter {
       });
       return;
     }
+
     response.send({
       data: {},
       message: exception.message,

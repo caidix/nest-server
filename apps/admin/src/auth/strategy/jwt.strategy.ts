@@ -19,11 +19,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(req, payload: JwtPayloadToken, done: any) {
     const originToken = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+    console.log({ originToken });
     const { name, id } = payload;
     const cacheToken = await this.authService.getRedisByToken({ name, id });
+    const verify = await this.authService.verifyUser(originToken);
+    const { iat = 0, exp = 0 } = verify;
+    const now = Date.now() / 1000;
+    if (now > exp) {
+      throw new ApiException(
+        'token已失效，请重新登录',
+        400,
+        ApiCodeEnum.TOKEN_OVERDUE,
+      );
+    }
     const user = await this.authService.validateUser(name);
-    console.log({ originToken, cacheToken });
-
     //单点登陆验证
     if (cacheToken && cacheToken !== originToken) {
       throw new ApiException(
@@ -35,7 +44,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     if (!user || user.id !== Number(id)) {
       return done(
-        new ApiException('token无效', 400, ApiCodeEnum.TOKEN_OVERDUE),
+        new ApiException(
+          'token已失效，请重新登录',
+          400,
+          ApiCodeEnum.TOKEN_OVERDUE,
+        ),
         false,
       );
     }

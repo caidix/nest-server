@@ -20,9 +20,9 @@ export class User {
   desc: string;
 
   @Column({
-    nullable: true,
     length: 100,
     comment: '密码',
+    select: false,
   })
   password: string;
 
@@ -31,6 +31,9 @@ export class User {
 
   @Column({ default: '', comment: '手机号' })
   phone: string;
+
+  @Column({ default: '', comment: '头像' })
+  avatar: string;
 
   @Column({ nullable: true, comment: '年龄' })
   age: string;
@@ -48,12 +51,16 @@ export class User {
   status: number;
 
   // 权限
-  @ManyToOne((type) => Role, (role) => role.users)
-  role: Role;
+  @ManyToMany(() => Role, (role) => role.users)
+  roles: Role[];
 
   // 组织
-  @ManyToMany((type) => Organization, (orientation) => orientation.users)
+  @ManyToMany(() => Organization, (orientation) => orientation.users)
   organizations: Organization[];
+
+  // 组织管理员
+  @ManyToMany(() => Organization, (orientation) => orientation.managers)
+  managers: Organization[];
 
   @Column({ default: 0, comment: '是否不可用' })
   isDelete: number;
@@ -61,14 +68,6 @@ export class User {
   @Column({ default: false, comment: '是否完成身份验证' })
   verification: boolean;
 
-  // 全部采用string而不用Date类型的原因是为了节省前端还需要转格式的麻烦过程
-  // 也可以这么写
-  // @Column({
-  //   name: 'update_time',
-  //   type: 'timestamp',
-  //   default: () => 'CURRENT_TIMESTAMP',
-  // })
-  // updateTime: Date;
   @Column({ default: '', nullable: true })
   crateTime: string;
 

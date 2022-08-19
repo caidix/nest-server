@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import * as cookieParser from 'cookie-parser';
 import envConfig from 'config/env';
 import { AdminModule } from './admin.module';
 import { TransformInterceptor } from 'libs/common/interceptor/transform.interceptor';
@@ -13,8 +14,11 @@ async function bootstrap() {
   //   origin: 'http://120.78.213.250',
   // });
 
+  // Cookie 处理
+  app.use(cookieParser());
+
   //设置公共接口 prefix 路径api
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('admin/api');
 
   // swagger 文档配置
   const options = new DocumentBuilder()

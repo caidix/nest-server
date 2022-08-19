@@ -1,6 +1,6 @@
 import * as nodemailer from 'nodemailer';
 import { Repository } from 'typeorm';
-import dayjs from 'dayjs';
+import * as dayjs from 'dayjs';
 import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import fetch from 'node-fetch';
@@ -39,16 +39,21 @@ export class UserService {
   ) {}
 
   public async createUser(user: CreateUserDto) {
-    let role;
+    const roles = [];
     try {
-      role = await this.roleRepository // 使用 repository 创建Query Builder
+      const role = await this.roleRepository // 使用 repository 创建Query Builder
         .createQueryBuilder('r') // 查找role实体， r为SQL 别名. SQL 查询中，Role是表名，r是我们分配给该表的别名。
         .where('r.id = :id', { id: user.roleId || 0 }) //　等同　WHERE role.id = user.roleId || 0. 你多次使用.where，你将覆盖所有以前的WHERE表达式,这时候需要使用andWhere
         .getOne();
+      if (role) {
+        roles.push(role.id);
+      }
     } catch (e) {
       console.log('角色不在');
       throw new HttpException('角色不存在', 200);
     }
+    console.log({ roles });
+
     try {
       const res = await this.userRepository
         .createQueryBuilder('u')
@@ -62,7 +67,7 @@ export class UserService {
             password: user.password,
             name: user.name,
             desc: user.desc,
-            role,
+            roles,
             email: user.email,
             nick: user.nick,
             address: user.address,
@@ -72,7 +77,7 @@ export class UserService {
         ])
         .execute();
 
-      console.log({ role, res });
+      console.log({ roles, res });
       return res;
     } catch (e) {
       console.log('shibei', e);
@@ -90,9 +95,11 @@ export class UserService {
     const leftJoinConditionOrganizations = {};
     const queryCondition = queryConditionList.join(' AND ');
     const leftJoinCondition = leftJoinConditionList.join('');
+    console.log(123312123);
+
     return await this.userRepository
       .createQueryBuilder('user') // 参数别名　user
-      .leftJoinAndSelect('user.role', 'r') // 自动加载了 user 的 role. 第一个参数是你要加载的关系，第二个参数是你为此关系的表分配的别名
+      .leftJoinAndSelect('user.roles', 'r') // 自动加载了 user 的 roles. 第一个参数是你要加载的关系，第二个参数是你为此关系的表分配的别名
       .leftJoinAndSelect(
         'user.organizations',
         'org',
@@ -119,7 +126,7 @@ export class UserService {
     const leftJoinCondition = leftJoinConditionList.join('');
     return await this.userRepository
       .createQueryBuilder('u')
-      .leftJoinAndSelect('u.role', 'r')
+      .leftJoinAndSelect('u.roles', 'r')
       .leftJoinAndSelect(
         'u.organizations',
         'org',
@@ -134,6 +141,32 @@ export class UserService {
   }
 
   /**
+   * 通过id查看
+   * @param name
+   */
+  public async findOneById(id: number): Promise<User> {
+    const queryConditionList = ['u.isDelete = :isDelete', 'u.id = :id'];
+    const leftJoinConditionList = [];
+    const leftJoinConditionOrganizations = {};
+    const queryCondition = queryConditionList.join(' AND ');
+    const leftJoinCondition = leftJoinConditionList.join('');
+    return await this.userRepository
+      .createQueryBuilder('u')
+      .leftJoinAndSelect('u.roles', 'r')
+      .leftJoinAndSelect(
+        'u.organizations',
+        'org',
+        leftJoinCondition,
+        leftJoinConditionOrganizations,
+      )
+      .where(queryCondition, {
+        id,
+        isDelete: 0,
+      })
+      .getOne();
+  }
+
+  /**
    * 用户登录
    * @param params
    */
@@ -142,6 +175,7 @@ export class UserService {
       return await this.userRepository
         .createQueryBuilder('u')
         .where('u.name = :name', { name: userName })
+        .addSelect('u.password')
         .getOne();
     } catch (e) {
       throw new ApiException('登录失败', 200, ApiCodeEnum.NO_FIND_USER);
