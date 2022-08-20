@@ -11,7 +11,7 @@ export const createVerificationCode = (len: number): string => {
   return code;
 };
 
-export const setEmailContent = (name, bgurl, sentence, code) => {
+export const setEmailContent = (bgurl, sentence, code) => {
   const today = new Date().toLocaleDateString(); //获取今天的日期
   const weekday = new Date().toLocaleString('default', { weekday: 'long' }); // 获取今天是星期几
   const content = `
@@ -56,7 +56,7 @@ export const setEmailContent = (name, bgurl, sentence, code) => {
         }
         </style>
         <div class="container">
-            <div class="title">喜欢你很久了，${name}</div>
+            <div class="title">喜欢你很久了</div>
             <div class="content">
                 <p style="display: flex;">
                     <span>😘今天是：${today}，${weekday}，这是我们爱的暗号：${code}~❤❤❤

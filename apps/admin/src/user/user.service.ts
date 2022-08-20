@@ -220,15 +220,16 @@ export class UserService {
   }
 
   /* 生成验证码并发送邮件 */
-  public async sendMailerByCode(email: string, userName: string) {
+  public async sendMailerByCode(email: string) {
     const code = createVerificationCode(6);
     const tuwei = await this.tuwei();
+    console.log({ code, form: this.configService.get('EMAIL_USER', '') });
+
     const emailOptions: MailerOptions = {
       from: `"进场认证" <${this.configService.get('EMAIL_USER', '')}>`, // 发件人 邮箱  '昵称<发件人邮箱>'
       to: email, // 这个是前端页面注册时输入的邮箱号
-      subject: `感谢${userName}注册全国最大的南桐俱乐部！`,
+      subject: `感谢您注册全国最大的南桐俱乐部！`,
       html: setEmailContent(
-        userName,
         'http://cd-blog.oss-cn-shenzhen.aliyuncs.com/9e55e91c318d4bb445ba4d2f75d5ca08.jpg',
         tuwei,
         code,
@@ -247,6 +248,7 @@ export class UserService {
   /* 校验邮箱发送的验证码 */
   public async verifyEmailerCode(email: string, code: string) {
     const currentCode = await this.redisCacheService.get(email);
+
     if (!currentCode) {
       throw new ApiException(
         '验证码已过期，请重新发送',
@@ -257,6 +259,12 @@ export class UserService {
     const res = currentCode === code;
     if (res) {
       this.redisCacheService.del(email);
+    } else {
+      throw new ApiException(
+        '验证码有误，请重新输入',
+        200,
+        ApiCodeEnum.SEND_MAILER_ERROR,
+      );
     }
     return res;
   }

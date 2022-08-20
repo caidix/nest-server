@@ -35,11 +35,15 @@ export class CreateUserDto {
 
   desc: string;
 
-  nick: string;
+  @ApiProperty({ description: '验证码' })
+  verifyCode: string;
 
-  id: any;
-  // 创建用户
-  other: any;
+  @ApiProperty({
+    description: '是否需要验证码，隐藏的逻辑，方便自身swagger注册用',
+  })
+  needVerifyCode: boolean;
 
   phone: string;
+
+  nick: string;
 }

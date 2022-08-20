@@ -37,19 +37,23 @@ export class UserController {
     summary: '用户注册',
   })
   public async createUser(@Body() createUserDto: CreateUserDto) {
-    const userInfo: User = await this.userService.findSpecifiedUser(
+    let userInfo: User = await this.userService.findSpecifiedUser(
       createUserDto.name,
     );
-    console.log(createUserDto, userInfo);
     if (userInfo) {
       return {
         message: '用户名被占用',
-        data: userInfo,
+        data: null,
         code: -1,
       };
     }
     try {
+      const { email, verifyCode, needVerifyCode = true } = createUserDto;
+      if (needVerifyCode) {
+        await this.userService.verifyEmailerCode(email, verifyCode);
+      }
       await this.userService.createUser(createUserDto);
+      userInfo = await this.userService.findSpecifiedUser(createUserDto.name);
       return {
         message: '注册成功',
         data: userInfo,
@@ -58,7 +62,7 @@ export class UserController {
     } catch (e) {
       return {
         message: e.errorMessage,
-        data: userInfo,
+        data: null,
         code: -1,
       };
     }
@@ -115,16 +119,16 @@ export class UserController {
     return {};
   }
 
-  @Post('sendEmailer')
+  @Post('send-emailer')
   @ApiOperation({
     summary: '发送邮箱验证码',
   })
-  public async sendEmailerCode(@Body() { email, name }: CreateEmailDto) {
-    const res = await this.userService.sendMailerByCode(email, name);
+  public async sendEmailerCode(@Body() { email }: CreateEmailDto) {
+    const res = await this.userService.sendMailerByCode(email);
     return returnClient('发送成功', ApiCodeEnum.SUCCESS, res);
   }
 
-  @Post('verifyCode')
+  @Post('verify-code')
   @ApiOperation({
     summary: '校验邮箱验证码',
   })

@@ -10,12 +10,12 @@ export class CreateEmailDto {
   @ApiProperty({ description: '邮箱', example: '615326423@qq.com' })
   email: string;
 
-  @IsString({
-    message: '用户名格式有误',
-    context: { errorCode: 20005 },
-  })
-  @ApiProperty({ description: '用户名', example: '轩宝' })
-  name: string;
+  // @IsString({
+  //   message: '用户名格式有误',
+  //   context: { errorCode: 20005 },
+  // })
+  // @ApiProperty({ description: '用户名', example: '轩宝' })
+  // name: string;
 }
 
 export class VerifyEmailDto {
