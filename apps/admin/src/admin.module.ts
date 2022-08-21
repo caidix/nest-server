@@ -6,9 +6,10 @@ import { RoleModule } from './role/role.module';
 import { CommonModule } from 'libs/common';
 import { AuthModule } from './auth/auth.module';
 import { RedisCacheService } from './redis/redis.service';
+import { SystemModule } from './system/system.module';
 
 @Module({
-  imports: [CommonModule, AuthModule, UserModule, RoleModule],
+  imports: [CommonModule, AuthModule, UserModule, RoleModule, SystemModule],
   controllers: [AdminController],
   providers: [AdminService, RedisCacheService],
 })
