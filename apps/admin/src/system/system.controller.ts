@@ -20,12 +20,8 @@ export class SystemController {
     try {
       const data = await this.systemService.getSystemList(params);
       return returnClient('获取成功', ApiCodeEnum.SUCCESS, data);
-    } catch (e) {
-      return {
-        message: e.errorMessage,
-        data: null,
-        code: -1,
-      };
+    } catch (error) {
+      return returnClient(error.errorMessage, error.code);
     }
   }
 
@@ -44,7 +40,7 @@ export class SystemController {
       const data = await this.systemService.createSystem(createSystemDto);
       return returnClient('创建成功', ApiCodeEnum.SUCCESS, data);
     } catch (error) {
-      return returnClient(error.errorMessage, ApiCodeEnum.PUBLIC_ERROR);
+      return returnClient(error.errorMessage, error.code);
     }
   }
 
@@ -57,7 +53,7 @@ export class SystemController {
       await this.systemService.updateSystem(systemDto);
       return returnClient('更新应用成功', ApiCodeEnum.SUCCESS);
     } catch (error) {
-      return returnClient(error.errorMessage, ApiCodeEnum.PUBLIC_ERROR);
+      return returnClient(error.errorMessage, error.code);
     }
   }
 }
