@@ -7,12 +7,18 @@ import { CommonModule } from 'libs/common';
 import { AuthModule } from './auth/auth.module';
 import { RedisCacheService } from './redis/redis.service';
 import { SystemModule } from './system/system.module';
-import { OrganizationService } from './organization/organization.service';
 import { OrganizationModule } from './organization/organization.module';
 
 @Module({
-  imports: [CommonModule, AuthModule, UserModule, RoleModule, SystemModule, OrganizationModule],
+  imports: [
+    CommonModule,
+    AuthModule,
+    UserModule,
+    RoleModule,
+    SystemModule,
+    OrganizationModule,
+  ],
   controllers: [AdminController],
-  providers: [AdminService, RedisCacheService, OrganizationService],
+  providers: [AdminService, RedisCacheService],
 })
 export class AdminModule {}

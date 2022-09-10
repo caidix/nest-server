@@ -2,7 +2,7 @@ import { Role } from '@libs/db/entity/RoleEntity';
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import dayjs from 'dayjs';
+import * as dayjs from 'dayjs';
 import { CreateRoleDto } from './dto/CreateRoleDto';
 
 @Injectable()

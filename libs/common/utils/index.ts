@@ -1,3 +1,5 @@
+import * as dayjs from 'dayjs';
+
 /* 随机生成验证🐎 */
 export const createVerificationCode = (len: number): string => {
   const library =
@@ -68,4 +70,24 @@ export const setEmailContent = (bgurl, sentence, code) => {
         </div>
   `;
   return content;
+};
+
+type FormatTimeType = 'create' | 'update' | 'delete';
+export const getFormatTime = (type: FormatTimeType) => {
+  const updateTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
+  if (type === 'create') {
+    return {
+      createTime: updateTime,
+      updateTime,
+    };
+  }
+  if (type === 'delete') {
+    return {
+      deleteTime: updateTime,
+      updateTime,
+    };
+  }
+  return {
+    updateTime,
+  };
 };

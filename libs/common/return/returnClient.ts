@@ -18,7 +18,6 @@ export function returnClient(
     code = message || 0;
     message = status;
     status = 200;
-    code = 0;
   }
   data = data || {};
   return {

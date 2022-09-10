@@ -9,7 +9,7 @@
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
-    "start": "nest start",
+    "start": "nest start -w",
     "start:admin": "nest start admin -w",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",

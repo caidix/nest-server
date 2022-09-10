@@ -1,8 +1,9 @@
 import { Organization } from '@libs/db/entity/OrganizationEntity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import dayjs from 'dayjs';
+import * as dayjs from 'dayjs';
 import { ApiException } from 'libs/common/exception/ApiException';
+import { getFormatTime } from 'libs/common/utils';
 import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
 import { Repository } from 'typeorm';
 
@@ -20,7 +21,12 @@ export class OrganizationService {
         .createQueryBuilder('o')
         .insert()
         .into(Organization)
-        .values([organization])
+        .values([
+          {
+            ...organization,
+            ...getFormatTime('create'),
+          },
+        ])
         .execute();
       return res;
     } catch (error) {
@@ -32,7 +38,7 @@ export class OrganizationService {
     }
   }
 
-  /** 获取单个用户组 */
+  /** 通过名称获取单个用户组 */
   public async getOrganizationByName(name: string) {
     try {
       return await this.organizationRepository
@@ -41,6 +47,27 @@ export class OrganizationService {
         .getOne();
     } catch (error) {
       throw new ApiException('查询用户组失败', 200, ApiCodeEnum.PUBLIC_ERROR);
+    }
+  }
+
+  /** 通过指定字段读取用户组 */
+  public async getOrganizationByMyself(obj: unknown) {
+    try {
+      const queryConditionList = [];
+      Object.keys(obj).map((key) => {
+        queryConditionList.push(`o.${key}=:${key}`);
+      });
+      const queryCondition = queryConditionList.join(' AND ');
+      return await this.organizationRepository
+        .createQueryBuilder('o')
+        .where(queryCondition, obj)
+        .getOne();
+    } catch (error) {
+      throw new ApiException(
+        '查询用户组失败' + error,
+        200,
+        ApiCodeEnum.PUBLIC_ERROR,
+      );
     }
   }
 
@@ -70,27 +97,29 @@ export class OrganizationService {
       const res = await this.organizationRepository
         .createQueryBuilder('o')
         .where(queryCondition, {
-          name,
+          name: `%${name}%`,
           isDelete: 0,
         })
         .orderBy('o.name', 'ASC')
-        .addOrderBy('o.value')
+        .addOrderBy('o.createTime')
         .skip((page - 1) * size)
         .take(size)
         .getManyAndCount();
       return { list: res[0], total: res[1], size, page };
     } catch (e) {
-      throw new ApiException('查询用户组失败', 200, ApiCodeEnum.PUBLIC_ERROR);
+      console.log({ e });
+      throw new ApiException('查询用户组失败', 400, ApiCodeEnum.PUBLIC_ERROR);
     }
   }
 
   /** 更新单个用户组 */
   public async updateOrganization(organization: any) {
     try {
+      console.log(getFormatTime('update'));
       return await this.organizationRepository
         .createQueryBuilder()
         .update(Organization)
-        .set({ ...organization })
+        .set({ ...organization, ...getFormatTime('update') })
         .where('id=:id', { id: organization.id })
         .execute();
     } catch (error) {

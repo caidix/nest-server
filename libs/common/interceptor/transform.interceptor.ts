@@ -31,6 +31,8 @@ export class TransformInterceptor<T>
     return next.handle().pipe(
       map((ctx, res) => {
         const { code, message, data, status } = ctx as any as ResProps;
+        console.log({ ctx, res });
+
         return {
           code,
           data,

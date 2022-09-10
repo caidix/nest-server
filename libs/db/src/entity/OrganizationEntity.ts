@@ -27,11 +27,8 @@ export class Organization {
   @Column({ default: '', nullable: true })
   desc: string;
 
-  @Column()
-  parentId: number;
-
-  @Column({ default: '', nullable: true })
-  parentName: string;
+  @Column({ default: '' })
+  code: string;
 
   @ManyToMany((type) => User, (user) => user.managers)
   @JoinTable()
@@ -49,7 +46,7 @@ export class Organization {
   isDelete: number;
 
   @Column({ default: '', nullable: true })
-  crateTime: string;
+  createTime: string;
 
   @Column({ default: '', nullable: true })
   updateTime: string;
