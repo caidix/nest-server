@@ -1,17 +1,20 @@
 import { Organization } from '@libs/db/entity/OrganizationEntity';
+import { User } from '@libs/db/entity/UserEntity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as dayjs from 'dayjs';
 import { ApiException } from 'libs/common/exception/ApiException';
 import { getFormatTime } from 'libs/common/utils';
 import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
-import { Repository } from 'typeorm';
+import { Brackets, NotBrackets, Repository } from 'typeorm';
 
 @Injectable()
 export class OrganizationService {
   constructor(
     @InjectRepository(Organization)
     private readonly organizationRepository: Repository<Organization>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   /** 创建用户组 */
@@ -125,6 +128,96 @@ export class OrganizationService {
     } catch (error) {
       throw new ApiException(
         '用户组更新失败:' + error,
+        200,
+        ApiCodeEnum.PUBLIC_ERROR,
+      );
+    }
+  }
+
+  /** 为组织关联用户 */
+  public async relationOrgByUser(addUserDto) {
+    try {
+      const { id, userIds = [] } = addUserDto;
+      const organization = await this.organizationRepository.findOne(id, {
+        relations: ['users'],
+      });
+      if (!organization) {
+        throw new ApiException(
+          '请先添加组织',
+          200,
+          ApiCodeEnum.ORIZATION_CREATED_FILED,
+        );
+      }
+      await this.organizationRepository
+        .createQueryBuilder()
+        .relation(Organization, 'users')
+        .of(id)
+        .addAndRemove(
+          userIds,
+          organization.users
+            ? organization.users.filter((u) => userIds.includes(u.id))
+            : [],
+        );
+      return await this.organizationRepository.findOne(id, {
+        relations: ['users'],
+      });
+    } catch (error) {
+      throw new ApiException(
+        '关联用户组失败:' + error,
+        200,
+        ApiCodeEnum.PUBLIC_ERROR,
+      );
+    }
+  }
+
+  /** 获取用户关联用户组列表 */
+  public async getOrganizationUserList(data: any) {
+    try {
+      const { id, size = 10, page = 1 } = data;
+      const queryConditionList = ['o.isDelete = :isDelete'];
+      if (id) {
+        queryConditionList.push('o.id=:id');
+      }
+      const queryCondition = queryConditionList.join(' AND ');
+      const res = await this.organizationRepository
+        .createQueryBuilder('o')
+        .where(queryCondition, { id, isDelete: false })
+        .leftJoinAndSelect('o.users', 'u')
+        .orderBy('u.name', 'ASC')
+        .skip((page - 1) * size)
+        .take(size)
+        .getManyAndCount();
+      return { list: res[0], total: res[1], size, page };
+    } catch (error) {
+      throw new ApiException(
+        '用户列表获取失败:' + error,
+        200,
+        ApiCodeEnum.PUBLIC_ERROR,
+      );
+    }
+  }
+
+  /** 根据组织id获取用户非关联用户组列表 */
+  public async getUnOrganizationUserList(data: any) {
+    try {
+      const { id, size = 10, page = 1 } = data;
+      const res = await this.userRepository
+        .createQueryBuilder('u')
+        .select(['u.id', 'u.name'])
+        .leftJoinAndSelect('u.organizations', 'o', 'o.isDelete = :isDelete', {
+          isDelete: false,
+        })
+        .where(
+          new NotBrackets((qb) => qb.where('o.id IN (:...ids)', { ids: [id] })),
+        )
+        .orderBy('u.id', 'ASC')
+        .skip((page - 1) * size)
+        .take(size)
+        .getManyAndCount();
+      return { list: res[0], total: res[1], size, page };
+    } catch (error) {
+      throw new ApiException(
+        '用户列表获取失败:' + error,
         200,
         ApiCodeEnum.PUBLIC_ERROR,
       );

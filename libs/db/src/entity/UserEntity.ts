@@ -55,11 +55,11 @@ export class User {
   roles: Role[];
 
   // 组织
-  @ManyToMany(() => Organization, (orientation) => orientation.users)
+  @ManyToMany(() => Organization, (organization) => organization.users)
   organizations: Organization[];
 
   // 组织管理员
-  @ManyToMany(() => Organization, (orientation) => orientation.managers)
+  @ManyToMany(() => Organization, (organization) => organization.managers)
   managers: Organization[];
 
   @Column({ default: 0, comment: '是否不可用' })

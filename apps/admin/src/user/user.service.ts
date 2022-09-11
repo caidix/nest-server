@@ -182,6 +182,32 @@ export class UserService {
     }
   }
 
+  /** 用户列表 */
+  public async getUserList(query: any) {
+    try {
+      const { name, size = 10, page = 1 } = query;
+      const queryConditionList = ['o.isDelete = :isDelete'];
+      if (name) {
+        queryConditionList.push('o.name LIKE :name');
+      }
+      const queryCondition = queryConditionList.join(' AND ');
+      const res = await this.userRepository
+        .createQueryBuilder('o')
+        .where(queryCondition, {
+          name: `%${name}%`,
+          isDelete: 0,
+        })
+        .orderBy('o.name', 'ASC')
+        .skip((page - 1) * size)
+        .take(size)
+        .getManyAndCount();
+      return { list: res[0], total: res[1], size, page };
+    } catch (e) {
+      console.log({ e });
+      throw new ApiException('查询用户列表失败', 400, ApiCodeEnum.PUBLIC_ERROR);
+    }
+  }
+
   /* 发送邮件 */
   public async sendMailer(mailOptions: MailerOptions) {
     let transporter: any = null;

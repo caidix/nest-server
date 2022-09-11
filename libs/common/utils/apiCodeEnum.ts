@@ -8,4 +8,5 @@ export enum ApiCodeEnum {
   USER_PASSWORD_FAILED = 40002, // 用户名或者密码不正确
   SEND_MAILER_ERROR = 40004, // 邮件发送失败
   MAILER_COMPILE_ERROR = 40005, // 验证码有误
+  ORIZATION_CREATED_FILED = 40008, // 用户组创建失败
 }
