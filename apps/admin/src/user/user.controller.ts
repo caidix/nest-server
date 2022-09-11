@@ -113,6 +113,22 @@ export class UserController {
     return returnClient('获取用户信息成功', ApiCodeEnum.SUCCESS, res);
   }
 
+  @Post('get-user-list')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  public async getUserList(@Body() params: any) {
+    const data = await this.userService.getUserList(params);
+    return returnClient('获取成功', ApiCodeEnum.SUCCESS, data);
+  }
+
+  @Post('get-all-user-list')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  public async getAllUserList() {
+    const data = await this.userService.getAllList();
+    return returnClient('获取成功', ApiCodeEnum.SUCCESS, data);
+  }
+
   @Get('test')
   public async test() {
     console.log({ configService: this.configService, pre: process.env.SECRET });

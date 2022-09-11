@@ -1,9 +1,25 @@
-import { Body, Controller, Get, Inject, Post, Query } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { returnClient } from 'libs/common/return/returnClient';
 import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
 import { OrganizationService } from './organization.service';
+import { AuthGuard } from '@nestjs/passport';
+import {
+  GetOrganizationListDto,
+  GetUnOrganizationListDto,
+  RelationOrganizationDto,
+} from './dto/QueryOrganizationDto';
 
+@ApiBearerAuth()
+// @UseGuards(AuthGuard('jwt'))
 @ApiTags('organization')
 @Controller('organization')
 export class OrganizationController {
@@ -51,7 +67,7 @@ export class OrganizationController {
   @ApiOperation({
     summary: '删除用户组',
   })
-  public async deleteOrganization(@Body() id: number | string) {
+  public async deleteOrganization(@Body('id') id: number | string) {
     await this.organizationService.deleteOrganization([id]);
     return returnClient('应用删除成功', ApiCodeEnum.SUCCESS);
   }
@@ -60,8 +76,39 @@ export class OrganizationController {
   @ApiOperation({
     summary: '批量删除用户组',
   })
-  public async deleteOrganizations(@Body() ids: Array<number | string> = []) {
+  public async deleteOrganizations(
+    @Body('ids') ids: Array<number | string> = [],
+  ) {
     await this.organizationService.deleteOrganization(ids);
     return returnClient('应用批量删除成功', ApiCodeEnum.SUCCESS);
+  }
+
+  @Post('get-unorganization-users')
+  @ApiOperation({
+    summary: '获取用户非关联用户组列表',
+  })
+  public async getUnOrganizationUserList(
+    @Body() dto: GetUnOrganizationListDto,
+  ) {
+    const data = await this.organizationService.getUnOrganizationUserList(dto);
+    return returnClient('获取非关联用户组列表成功', ApiCodeEnum.SUCCESS, data);
+  }
+
+  @Post('get-organization-users')
+  @ApiOperation({
+    summary: '获取用户关联用户组列表',
+  })
+  public async getOrganizationUserList(@Body() dto: GetOrganizationListDto) {
+    const data = await this.organizationService.getOrganizationUserList(dto);
+    return returnClient('获取关联用户组列表成功', ApiCodeEnum.SUCCESS, data);
+  }
+
+  @Post('relation-organization-user')
+  @ApiOperation({
+    summary: '为组织关联用户',
+  })
+  public async relationOrgByUser(@Body() dto: RelationOrganizationDto) {
+    const data = await this.organizationService.relationOrgByUser(dto);
+    return returnClient('关联用户成功', ApiCodeEnum.SUCCESS, data);
   }
 }
