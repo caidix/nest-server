@@ -1,12 +1,28 @@
-import { Body, Controller, Get, Inject, Post, Query } from '@nestjs/common';
+import { User } from '@libs/db/entity/UserEntity';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from 'libs/common/decorator/current-user.decorator';
 import { returnClient } from 'libs/common/return/returnClient';
 import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
-import { QuerySystemDto } from './dto/QuerySystemDto';
+import {
+  CreateSystemDto,
+  DeleteSystemDto,
+  QuerySystemDto,
+} from './dto/SystemDto';
 import { SystemService } from './system.service';
 
 @Controller('system')
 @ApiTags('system')
+@UseGuards(AuthGuard('jwt'))
 export class SystemController {
   constructor(
     @Inject(SystemService) private readonly systemService: SystemService,
@@ -29,18 +45,22 @@ export class SystemController {
   @ApiOperation({
     summary: '创建应用',
   })
-  public async createSystem(@Body() createSystemDto: any) {
+  public async createSystem(
+    @Body() createSystemDto: CreateSystemDto,
+    @CurrentUser() user: User,
+  ) {
     try {
-      const hasSystem = await this.systemService.getSystemByName(
-        createSystemDto.name,
-      );
+      const hasSystem = await this.systemService.validSystem({
+        name: createSystemDto.name,
+        code: createSystemDto.code,
+      });
       if (hasSystem) {
-        return returnClient('应用名已重复', ApiCodeEnum.PUBLIC_ERROR);
+        return returnClient(hasSystem, ApiCodeEnum.PUBLIC_ERROR);
       }
-      const data = await this.systemService.createSystem(createSystemDto);
+      const data = await this.systemService.createSystem(createSystemDto, user);
       return returnClient('创建成功', ApiCodeEnum.SUCCESS, data);
     } catch (error) {
-      return returnClient(error.errorMessage, error.code);
+      return returnClient('应用创建失败', error.code);
     }
   }
 
@@ -49,9 +69,18 @@ export class SystemController {
     summary: '更新应用',
   })
   public async updateSystem(@Body() systemDto: any) {
+    await this.systemService.updateSystem(systemDto);
+    return returnClient('更新应用成功', ApiCodeEnum.SUCCESS);
+  }
+
+  @Post('delete-system')
+  @ApiOperation({
+    summary: '删除应用',
+  })
+  public async deleteSystem(@Body() systemDto: DeleteSystemDto) {
     try {
-      await this.systemService.updateSystem(systemDto);
-      return returnClient('更新应用成功', ApiCodeEnum.SUCCESS);
+      await this.systemService.deleteSystem(systemDto);
+      return returnClient('删除应用成功', ApiCodeEnum.SUCCESS);
     } catch (error) {
       return returnClient(error.errorMessage, error.code);
     }
