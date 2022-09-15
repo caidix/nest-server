@@ -223,4 +223,27 @@ export class OrganizationService {
       );
     }
   }
+
+  /** 获取用户所关联的用户组 */
+  public async getUserOrganizationList(user: User) {
+    try {
+      const res = await this.userRepository
+        .createQueryBuilder('u')
+        .where('u.id=:id', { id: user.id })
+        .leftJoinAndSelect('u.organizations', 'o')
+        .where('o.isDelete = :isDelete', {
+          isDelete: 0,
+        })
+        .getOne();
+
+      const orgs = res.organizations || [];
+      return orgs;
+    } catch (error) {
+      throw new ApiException(
+        '用户组获取失败:' + error,
+        200,
+        ApiCodeEnum.PUBLIC_ERROR,
+      );
+    }
+  }
 }

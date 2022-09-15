@@ -18,7 +18,11 @@ import { LoginUserDto } from './dto/LoginUserDto';
 // Utils
 import { ApiException } from 'libs/common/exception/ApiException';
 import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
-import { createVerificationCode, setEmailContent } from 'libs/common/utils';
+import {
+  createVerificationCode,
+  getFormatTime,
+  setEmailContent,
+} from 'libs/common/utils';
 
 // https://typeorm.biunav.com/zh/select-query-builder.html#%E4%BB%80%E4%B9%88%E6%98%AFquerybuilder
 
@@ -62,8 +66,7 @@ export class UserService {
         .values([
           // 数组形式可以同时添加多个，也可以用object只添加单个
           {
-            crateTime: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-            updateTime: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+            ...getFormatTime('create'),
             password: user.password,
             name: user.name,
             desc: user.desc,

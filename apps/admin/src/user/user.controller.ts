@@ -107,7 +107,6 @@ export class UserController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   public async getUserDetail(@CurrentUser() user) {
-    console.log(user);
     const { id } = user;
     const res = await this.userService.findOneById(id);
     return returnClient('获取用户信息成功', ApiCodeEnum.SUCCESS, res);

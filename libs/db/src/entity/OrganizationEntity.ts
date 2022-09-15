@@ -38,10 +38,6 @@ export class Organization {
   @JoinTable()
   users: User[];
 
-  @OneToMany(() => System, (org) => org.organization)
-  @JoinTable()
-  systems: System[];
-
   @Column({ default: 0 })
   isDelete: number;
 

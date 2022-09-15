@@ -34,10 +34,11 @@ export class System {
   logoUrl: string;
 
   @Column({ default: '', comment: '应用编码' })
-  code: string; // 所属用户组
+  code: string;
 
-  @ManyToOne(() => Organization, (org) => org.systems)
-  organization: Organization;
+  // 所属用户组
+  @Column({ nullable: false, comment: '所属用户组' })
+  organization: string;
 
   @Column({ default: 0 })
   isDelete: number;

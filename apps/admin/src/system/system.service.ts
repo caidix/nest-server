@@ -1,15 +1,18 @@
+import { Organization } from '@libs/db/entity/OrganizationEntity';
 import { System } from '@libs/db/entity/SystemEntity';
 import { User } from '@libs/db/entity/UserEntity';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ApiException } from 'libs/common/exception/ApiException';
 import { getFormatTime } from 'libs/common/utils';
 import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
-import { Repository } from 'typeorm';
+import { NotBrackets, Repository } from 'typeorm';
+import { OrganizationService } from '../organization/organization.service';
 import {
   CreateSystemDto,
   DeleteSystemDto,
   QuerySystemDto,
+  QuerySystemListDto,
 } from './dto/SystemDto';
 
 @Injectable()
@@ -17,12 +20,22 @@ export class SystemService {
   constructor(
     @InjectRepository(System)
     private readonly systemRepository: Repository<System>,
+    @Inject(OrganizationService)
+    private readonly organizationService: OrganizationService,
   ) {}
 
   /** 创建应用 */
   public async createSystem(system: any, user: User) {
     try {
       const userId = user.id;
+      const organizationCode = system.organization;
+      const organization =
+        await this.organizationService.getOrganizationByMyself({
+          code: organizationCode,
+        });
+      if (!organization) {
+        throw new ApiException('所属应用组失效', 200, ApiCodeEnum.PUBLIC_ERROR);
+      }
       const res = await this.systemRepository
         .createQueryBuilder('s')
         .insert()
@@ -57,7 +70,6 @@ export class SystemService {
           isDelete: 0,
         })
         .getOne();
-      console.log({ res });
       if (res && res.code === code) {
         return '应用code已重复';
       }
@@ -68,11 +80,16 @@ export class SystemService {
   }
 
   /** 获取单个应用 */
-  public async getSystemByName(name: string) {
+  public async getSystemDetail(systemDto: QuerySystemDto) {
     try {
+      const queryConditionList = [];
+      Object.keys(systemDto).map((key) => {
+        queryConditionList.push(`s.${key}=:${key}`);
+      });
+      const queryCondition = queryConditionList.join(' AND ');
       return await this.systemRepository
         .createQueryBuilder('s')
-        .where('s.name=:name', { name })
+        .where(queryCondition, systemDto)
         .getOne();
     } catch (error) {
       throw new ApiException('查询应用失败', 200, ApiCodeEnum.PUBLIC_ERROR);
@@ -85,7 +102,7 @@ export class SystemService {
       return await this.systemRepository
         .createQueryBuilder()
         .update(System)
-        .set({ ...system })
+        .set({ ...system, ...getFormatTime('update') })
         .where('id=:id', { id: system.id })
         .execute();
     } catch (error) {
@@ -98,29 +115,34 @@ export class SystemService {
   }
 
   /** 获取应用列表 */
-  public async getSystemList(query: QuerySystemDto) {
+  public async getSystemList(query: QuerySystemListDto) {
     try {
       const { search, organization, size = 10, page = 1 } = query;
       const queryConditionList = ['s.isDelete = :isDelete'];
       if (organization) {
-        queryConditionList.push('o.id=:organization');
+        queryConditionList.push('s.organization=:organization');
       }
       if (search) {
         queryConditionList.push('s.name LIKE :name OR s.code = :code');
       }
       const res = await this.systemRepository
         .createQueryBuilder('s')
-        .leftJoinAndSelect('s.organization', 'o')
         .where(queryConditionList.join(' AND '), {
           name: `%${search}%`,
           organization,
           isDelete: 0,
           code: search,
         })
+        // 非关联型联查方法
+        // .leftJoinAndMapOne(
+        //   's.organization',
+        //   Organization,
+        //   'photo',
+        //   's.organization=photo.code',
+        // )
         .skip((page - 1) * size)
         .take(size)
         .getManyAndCount();
-      console.log({ res });
       return { list: res[0], total: res[1], size, page };
     } catch (error) {
       console.log({ error });

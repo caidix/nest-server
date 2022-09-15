@@ -10,6 +10,12 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 
 export class QuerySystemDto {
+  @ApiProperty({ title: 'id' })
+  id?: number;
+  @ApiProperty({ title: '应用编码', example: '' })
+  code?: string;
+}
+export class QuerySystemListDto {
   @ApiProperty({ title: '应用名称或编码', example: '用户信息管理' })
   @IsString({ message: '系统值不正确', context: { errorCode: 1 } })
   search?: string;

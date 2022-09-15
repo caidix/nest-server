@@ -17,9 +17,10 @@ import {
   GetUnOrganizationListDto,
   RelationOrganizationDto,
 } from './dto/QueryOrganizationDto';
+import { CurrentUser } from 'libs/common/decorator/current-user.decorator';
 
 @ApiBearerAuth()
-// @UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'))
 @ApiTags('organization')
 @Controller('organization')
 export class OrganizationController {
@@ -110,5 +111,14 @@ export class OrganizationController {
   public async relationOrgByUser(@Body() dto: RelationOrganizationDto) {
     const data = await this.organizationService.relationOrgByUser(dto);
     return returnClient('关联用户成功', ApiCodeEnum.SUCCESS, data);
+  }
+
+  @Get('get-user-organizations')
+  @ApiOperation({
+    summary: '获取用户所关联的用户组',
+  })
+  public async getUserOrganizationList(@CurrentUser() user) {
+    const data = await this.organizationService.getUserOrganizationList(user);
+    return returnClient('获取用户组成功', ApiCodeEnum.SUCCESS, data);
   }
 }

@@ -17,6 +17,7 @@ import {
   CreateSystemDto,
   DeleteSystemDto,
   QuerySystemDto,
+  QuerySystemListDto,
 } from './dto/SystemDto';
 import { SystemService } from './system.service';
 
@@ -32,7 +33,7 @@ export class SystemController {
   @ApiOperation({
     summary: '获取应用列表',
   })
-  public async getSystemList(@Query() params: QuerySystemDto) {
+  public async getSystemList(@Query() params: QuerySystemListDto) {
     try {
       const data = await this.systemService.getSystemList(params);
       return returnClient('获取成功', ApiCodeEnum.SUCCESS, data);
@@ -84,5 +85,14 @@ export class SystemController {
     } catch (error) {
       return returnClient(error.errorMessage, error.code);
     }
+  }
+
+  @Post('system-detail')
+  @ApiOperation({
+    summary: '获取应用详情',
+  })
+  public async getSystemDetail(@Body() systemDto: QuerySystemDto) {
+    const data = await this.systemService.getSystemDetail(systemDto);
+    return returnClient('获取应用详情成功', ApiCodeEnum.SUCCESS, data);
   }
 }
