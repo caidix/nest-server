@@ -7,11 +7,12 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { CommonEntity } from './Common';
 import { Organization } from './OrganizationEntity';
 
 /** 应用表 */
 @Entity()
-export class System {
+export class System extends CommonEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -39,22 +40,4 @@ export class System {
   // 所属用户组
   @Column({ nullable: false, comment: '所属用户组' })
   organization: string;
-
-  @Column({ default: 0 })
-  isDelete: number;
-
-  @Column({ default: '', nullable: true })
-  createTime: string;
-
-  @Column({ default: '', nullable: true })
-  updateTime: string;
-
-  @Column({ default: '', nullable: true })
-  deleteTime: string;
-
-  @Column({ comment: '创建者id' })
-  creator: number;
-
-  @Column({ comment: '操作者id' })
-  operator: number;
 }

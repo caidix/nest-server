@@ -1,23 +1,15 @@
 import { IShowStatusEnum } from 'libs/common/types/enums';
-import {
-  Entity,
-  Tree,
-  Column,
-  PrimaryGeneratedColumn,
-  TreeChildren,
-  TreeParent,
-  TreeLevelColumn,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { CommonEntity } from './Common';
 
 export enum IMenuTypeEnum {
   MENU = 'menu',
   PAGE = 'page',
 }
 
-/** 应用菜单 - 闭合表 */
+/** 应用菜单 */
 @Entity()
-@Tree('closure-table')
-export class SystemMenu {
+export class SystemMenu extends CommonEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -51,15 +43,9 @@ export class SystemMenu {
   })
   isShow: IShowStatusEnum;
 
-  @TreeChildren()
-  children: SystemMenu[];
+  @Column({ comment: '归属应用id' })
+  systemId: number;
 
-  @TreeParent()
-  parent: SystemMenu;
-
-  @Column({ comment: '创建者id' })
-  creator: number;
-
-  @Column({ comment: '操作者id' })
-  operator: number;
+  @Column({ comment: '归属父级菜单id' })
+  parentId: number;
 }

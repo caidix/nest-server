@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { RedisCacheService } from './redis/redis.service';
 import { SystemModule } from './system/system.module';
 import { OrganizationModule } from './organization/organization.module';
+import { SystemMenuModule } from './system-menu/system-menu.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { OrganizationModule } from './organization/organization.module';
     RoleModule,
     SystemModule,
     OrganizationModule,
+    SystemMenuModule,
   ],
   controllers: [AdminController],
   providers: [AdminService, RedisCacheService],
