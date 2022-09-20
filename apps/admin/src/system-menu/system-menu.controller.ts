@@ -29,9 +29,15 @@ export class SystemMenuController {
   @ApiOperation({
     summary: '获取菜单菜单列表',
   })
-  public async getSystemList(@Query() params: any) {
+  public async getSystemMenuList(
+    @Query() params: { code: string },
+    @CurrentUser() user: User,
+  ) {
     try {
-      const data = await this.systemMenuiService.getSystemMenuList(params);
+      const data = await this.systemMenuiService.getSystemMenuList(
+        params.code,
+        user,
+      );
       return returnClient('获取成功', ApiCodeEnum.SUCCESS, data);
     } catch (error) {
       return returnClient(error.errorMessage, error.code);

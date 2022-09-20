@@ -1,3 +1,4 @@
+import { System } from '@libs/db/entity/SystemEntity';
 import { SystemMenu } from '@libs/db/entity/SystemMenuEntity';
 import { User } from '@libs/db/entity/UserEntity';
 import { Injectable } from '@nestjs/common';
@@ -14,6 +15,8 @@ export class SystemMenuService {
   constructor(
     @InjectRepository(SystemMenu)
     private readonly systemMenuRepository: Repository<SystemMenu>,
+    @InjectRepository(System)
+    private readonly systemRepository: Repository<System>,
   ) {}
 
   /** 创建菜单 */
@@ -151,18 +154,15 @@ export class SystemMenuService {
   }
 
   /** 获取菜单列表 */
-  public async getSystemMenuList(name: string) {
+  public async getSystemMenuList(code: string, user: User) {
     try {
       const queryConditionList = ['s.isDelete = :isDelete'];
-      if (name) {
-        queryConditionList.push('s.name = :name');
-      }
+
       const queryCondition = queryConditionList.join(' AND ');
       const res = await this.systemMenuRepository
         .createQueryBuilder('s')
         .where(queryCondition, {
           isDelete: 0,
-          name,
         })
         .orderBy('s.sort', 'DESC')
         .addOrderBy('s.id', 'DESC')

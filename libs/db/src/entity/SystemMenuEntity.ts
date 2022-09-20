@@ -6,6 +6,10 @@ export enum IMenuTypeEnum {
   MENU = 'menu',
   PAGE = 'page',
 }
+export enum PageOpenEnum {
+  Inline = 1,
+  LinkTo = 2,
+}
 
 /** 应用菜单 */
 @Entity()
@@ -25,6 +29,9 @@ export class SystemMenu extends CommonEntity {
   @Column({ comment: '菜单描述', default: '', length: 500 })
   desc: string;
 
+  @Column({ comment: 'Icon图标', default: '' })
+  iconUrl: string;
+
   @Column('enum', {
     comment: '菜单类型',
     default: IMenuTypeEnum.PAGE,
@@ -42,6 +49,13 @@ export class SystemMenu extends CommonEntity {
     enum: IShowStatusEnum,
   })
   isShow: IShowStatusEnum;
+
+  @Column('enum', {
+    comment: '页面打开方式 1：内嵌  2：跳转',
+    default: PageOpenEnum.Inline,
+    enum: PageOpenEnum,
+  })
+  pageOpenMethod: PageOpenEnum;
 
   @Column({ comment: '归属应用id' })
   systemId: number;

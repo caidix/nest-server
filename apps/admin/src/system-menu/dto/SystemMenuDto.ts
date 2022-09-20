@@ -8,7 +8,7 @@ import {
   IsNumber,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { IMenuTypeEnum } from '@libs/db/entity/SystemMenuEntity';
+import { IMenuTypeEnum, PageOpenEnum } from '@libs/db/entity/SystemMenuEntity';
 import { IShowStatusEnum } from 'libs/common/types/enums';
 
 export class CreateSystemMenuDto {
@@ -24,6 +24,9 @@ export class CreateSystemMenuDto {
   @ApiProperty({ title: '菜单描述', default: '' })
   desc: string;
 
+  @ApiProperty({ title: 'Icon图标', default: '' })
+  iconUrl: string;
+
   @ApiProperty({
     title: '菜单类型',
     default: IMenuTypeEnum.PAGE,
@@ -32,13 +35,19 @@ export class CreateSystemMenuDto {
 
   /** 找到同级下最大的排序 + 1 */
   @ApiProperty({ title: '菜单排序', default: 1 })
-  sort: number;
+  sort?: number;
 
   @ApiProperty({
     title: '显示隐藏 1：显示  2：隐藏',
     default: IShowStatusEnum.HIDDEN,
   })
   isShow: IShowStatusEnum;
+
+  @ApiProperty({
+    title: '页面打开方式 1：内嵌  2：跳转',
+    default: PageOpenEnum.Inline,
+  })
+  pageOpenMethod: PageOpenEnum;
 
   @ApiProperty({ title: '归属应用id' })
   systemId: number;
