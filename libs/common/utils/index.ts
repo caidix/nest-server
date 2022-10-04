@@ -91,3 +91,16 @@ export const getFormatTime = (type: FormatTimeType) => {
     updateTime,
   };
 };
+
+export function getIds(list: { id: number }[], childKey = 'children') {
+  const ids = [];
+  list.forEach((item) => {
+    if (item.id) {
+      ids.push(item.id);
+    }
+    if (item[childKey]) {
+      ids.push(...getIds(item[childKey], childKey));
+    }
+  });
+  return ids;
+}

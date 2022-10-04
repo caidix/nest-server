@@ -25,3 +25,29 @@ export const listToTree = (
     return father[parentId] === minParentId;
   });
 };
+
+type DataSource<T> = Array<T> | undefined;
+
+/**
+ * 树形结构中找到该对象
+ * @param dataSource
+ * @param predicate
+ * @param mapper
+ */
+export function findTarget<T>(
+  dataSource: Array<T>,
+  predicate: (item: T) => boolean,
+  mapper: (item: T) => DataSource<T>,
+): T | undefined {
+  const queue = [...dataSource];
+  while (queue.length !== 0) {
+    const item = queue.shift();
+    if (predicate(item)) {
+      return item;
+    }
+    const children = mapper(item);
+    if (children && children.length) {
+      queue.push(...children);
+    }
+  }
+}

@@ -3,8 +3,8 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 import { CommonEntity } from './Common';
 
 export enum IMenuTypeEnum {
-  MENU = 'menu',
-  PAGE = 'page',
+  Menu = 1,
+  Page = 2,
 }
 export enum PageOpenEnum {
   Inline = 1,
@@ -34,7 +34,7 @@ export class SystemMenu extends CommonEntity {
 
   @Column('enum', {
     comment: '菜单类型',
-    default: IMenuTypeEnum.PAGE,
+    default: IMenuTypeEnum.Page,
     enum: IMenuTypeEnum,
   })
   menuType: IMenuTypeEnum;
@@ -45,7 +45,7 @@ export class SystemMenu extends CommonEntity {
 
   @Column('enum', {
     comment: '显示隐藏 1：显示  2：隐藏',
-    default: IShowStatusEnum.HIDDEN,
+    default: IShowStatusEnum.Hidden,
     enum: IShowStatusEnum,
   })
   isShow: IShowStatusEnum;
@@ -57,9 +57,9 @@ export class SystemMenu extends CommonEntity {
   })
   pageOpenMethod: PageOpenEnum;
 
-  @Column({ comment: '归属应用id' })
-  systemId: number;
+  @Column({ comment: '归属应用code' })
+  systemCode: string;
 
-  @Column({ comment: '归属父级菜单id' })
+  @Column({ comment: '归属父级菜单id', default: null })
   parentId: number;
 }

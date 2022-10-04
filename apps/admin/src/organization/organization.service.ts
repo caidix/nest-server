@@ -236,7 +236,7 @@ export class OrganizationService {
         })
         .getOne();
 
-      const orgs = res.organizations || [];
+      const orgs = res?.organizations || [];
       return orgs;
     } catch (error) {
       throw new ApiException(

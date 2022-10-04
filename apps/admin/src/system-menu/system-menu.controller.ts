@@ -9,15 +9,21 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'libs/common/decorator/current-user.decorator';
 import { returnClient } from 'libs/common/return/returnClient';
 import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
-import { CreateSystemMenuDto, UpdateSystemMenu } from './dto/SystemMenuDto';
+import {
+  CreateSystemMenuDto,
+  HandleMenu,
+  OperationMenu,
+  UpdateSystemMenu,
+} from './dto/SystemMenuDto';
 import { SystemMenuService } from './system-menu.service';
 
 @Controller('system-menu')
 @ApiTags('system-menu')
+@ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
 export class SystemMenuController {
   constructor(
@@ -52,15 +58,11 @@ export class SystemMenuController {
     @Body() createSystemDto: CreateSystemMenuDto,
     @CurrentUser() user: User,
   ) {
-    try {
-      const data = await this.systemMenuiService.createSystemMenu(
-        createSystemDto,
-        user,
-      );
-      return returnClient('创建成功', ApiCodeEnum.SUCCESS, data);
-    } catch (error) {
-      return returnClient('菜单创建失败', error.code);
-    }
+    const data = await this.systemMenuiService.createSystemMenu(
+      createSystemDto,
+      user,
+    );
+    return returnClient('创建成功', ApiCodeEnum.SUCCESS, data);
   }
 
   @Post('update')
@@ -79,9 +81,12 @@ export class SystemMenuController {
   @ApiOperation({
     summary: '删除菜单',
   })
-  public async deleteSystem(@Body() id: number) {
+  public async deleteSystem(
+    @Body() data: HandleMenu,
+    @CurrentUser() user: User,
+  ) {
     try {
-      await this.systemMenuiService.deleteSystemMenu(id);
+      await this.systemMenuiService.deleteSystemMenu(data, user);
       return returnClient('删除菜单成功', ApiCodeEnum.SUCCESS);
     } catch (error) {
       return returnClient(error.errorMessage, error.code);
@@ -95,5 +100,32 @@ export class SystemMenuController {
   public async getSystemDetail(@Body() id: number) {
     const data = await this.systemMenuiService.getSystemMenu({ id });
     return returnClient('获取菜单详情成功', ApiCodeEnum.SUCCESS, data);
+  }
+
+  @Post('move')
+  @ApiOperation({
+    summary: '菜单排序上下移',
+  })
+  public async moveMenu(
+    @Body() OperationMenuDto: OperationMenu,
+    @CurrentUser() user: User,
+  ) {
+    const res = await this.systemMenuiService.moveMenu(OperationMenuDto, user);
+    return returnClient('更新菜单成功', ApiCodeEnum.SUCCESS, res);
+  }
+
+  @Post('status')
+  @ApiOperation({
+    summary: '菜单显示隐藏',
+  })
+  public async changeMenuStatus(
+    @Body() OperationMenuDto: OperationMenu,
+    @CurrentUser() user: User,
+  ) {
+    const res = await this.systemMenuiService.changeMenuStatus(
+      OperationMenuDto,
+      user,
+    );
+    return returnClient('更新菜单成功', ApiCodeEnum.SUCCESS, res);
   }
 }

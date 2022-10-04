@@ -1,4 +1,4 @@
 export enum IShowStatusEnum {
-  SHOW = 1,
-  HIDDEN = 2,
+  Show = 1,
+  Hidden = 2,
 }
