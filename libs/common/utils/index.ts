@@ -1,3 +1,4 @@
+import { User } from '@libs/db/entity/UserEntity';
 import * as dayjs from 'dayjs';
 
 /* 随机生成验证🐎 */
@@ -73,23 +74,45 @@ export const setEmailContent = (bgurl, sentence, code) => {
 };
 
 type FormatTimeType = 'create' | 'update' | 'delete';
-export const getFormatTime = (type: FormatTimeType) => {
-  const updateTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
-  if (type === 'create') {
-    return {
-      createTime: updateTime,
-      updateTime,
-    };
-  }
-  if (type === 'delete') {
-    return {
-      deleteTime: updateTime,
-      updateTime,
-    };
-  }
-  return {
-    updateTime,
+type FormatDataType = {
+  updateTime: string;
+  createTime?: string;
+  creator?: number;
+  operator?: number;
+};
+export const getFormatData = (type: FormatTimeType, user?: User) => {
+  const baseTime = dayjs().format('YYYY-MM-DD HH:mm:ss');
+  const dataPicker = (data) => {
+    return Object.keys(data)
+      .filter((key) => Boolean(data[key]))
+      .reduce((pre, key) => {
+        data[key] && (pre[key] = data[key]);
+        return pre;
+      }, {}) as FormatDataType;
   };
+  switch (type) {
+    case 'create':
+      return dataPicker({
+        createTime: baseTime,
+        updateTime: baseTime,
+        creator: user.id,
+        operator: user.id,
+      });
+    case 'update':
+      return dataPicker({
+        updateTime: baseTime,
+        operator: user.id,
+      });
+    case 'delete':
+      return dataPicker({
+        updateTime: baseTime,
+        deleteTime: baseTime,
+        operator: user.id,
+        isDelete: 1,
+      });
+    default:
+      return {};
+  }
 };
 
 export function getIds(list: { id: number }[], childKey = 'children') {

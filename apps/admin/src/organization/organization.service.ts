@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as dayjs from 'dayjs';
 import { ApiException } from 'libs/common/exception/ApiException';
-import { getFormatTime } from 'libs/common/utils';
+import { getFormatData } from 'libs/common/utils';
 import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
 import { Brackets, NotBrackets, Repository } from 'typeorm';
 
@@ -27,7 +27,7 @@ export class OrganizationService {
         .values([
           {
             ...organization,
-            ...getFormatTime('create'),
+            ...getFormatData('create'),
           },
         ])
         .execute();
@@ -118,11 +118,10 @@ export class OrganizationService {
   /** 更新单个用户组 */
   public async updateOrganization(organization: any) {
     try {
-      console.log(getFormatTime('update'));
       return await this.organizationRepository
         .createQueryBuilder()
         .update(Organization)
-        .set({ ...organization, ...getFormatTime('update') })
+        .set({ ...organization, ...getFormatData('update') })
         .where('id=:id', { id: organization.id })
         .execute();
     } catch (error) {

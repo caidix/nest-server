@@ -13,6 +13,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'libs/common/decorator/current-user.decorator';
 import { returnClient } from 'libs/common/return/returnClient';
 import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
+import { SystemService } from '../system/system.service';
 import {
   CreateSystemMenuDto,
   HandleMenu,
@@ -29,6 +30,7 @@ export class SystemMenuController {
   constructor(
     @Inject(SystemMenuService)
     private readonly systemMenuiService: SystemMenuService,
+    @Inject(SystemService) private readonly systemService: SystemService,
   ) {}
 
   @Get('list')
@@ -58,11 +60,46 @@ export class SystemMenuController {
     @Body() createSystemDto: CreateSystemMenuDto,
     @CurrentUser() user: User,
   ) {
-    const data = await this.systemMenuiService.createSystemMenu(
-      createSystemDto,
-      user,
-    );
-    return returnClient('创建成功', ApiCodeEnum.SUCCESS, data);
+    try {
+      // 判断系统是否存在
+      const hasSystem = await this.systemService.validSystem({
+        name: createSystemDto.name,
+        code: createSystemDto.code,
+      });
+      if (hasSystem) {
+        return returnClient(hasSystem, ApiCodeEnum.PUBLIC_ERROR);
+      }
+
+      // 判断父级菜单是否存在
+      if (createSystemDto.parentId) {
+        const hasParentMenu = await this.systemMenuiService.validParentMenu(
+          createSystemDto.parentId,
+        );
+        if (!hasParentMenu) {
+          return returnClient('父级菜单不存在', ApiCodeEnum.PUBLIC_ERROR);
+        }
+      }
+
+      // 获取当前菜单应有排序
+      const childMenus = await this.systemMenuiService.getChildrens(
+        createSystemDto.parentId || null,
+      );
+      let lastMenu = 1;
+      if (childMenus && childMenus.length) {
+        const lastSort = childMenus[childMenus.length - 1].sort;
+        lastMenu = lastSort + 1;
+        if (childMenus.find((menu) => menu.code === createSystemDto.code)) {
+          return returnClient('菜单编码已存在', ApiCodeEnum.PUBLIC_ERROR);
+        }
+      }
+      const data = await this.systemMenuiService.createSystemMenu(
+        { ...createSystemDto, sort: lastMenu },
+        user,
+      );
+      return returnClient('创建成功', ApiCodeEnum.SUCCESS, data);
+    } catch (error) {
+      return returnClient(error.errorMessage, error.code);
+    }
   }
 
   @Post('update')

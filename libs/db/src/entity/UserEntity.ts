@@ -6,8 +6,6 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Organization } from './OrganizationEntity';
-import { Role } from './RoleEntity';
-
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -49,10 +47,6 @@ export class User {
    */
   @Column({ default: 0, comment: '状态' })
   status: number;
-
-  // 权限
-  @ManyToMany(() => Role, (role) => role.users)
-  roles: Role[];
 
   // 组织
   @ManyToMany(() => Organization, (organization) => organization.users)

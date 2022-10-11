@@ -6,7 +6,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import fetch from 'node-fetch';
 
 // Entity Service
-import { Role } from '@libs/db/entity/RoleEntity';
 import { User } from '@libs/db/entity/UserEntity';
 import { ConfigService } from '@nestjs/config';
 import { RedisCacheService } from '../redis/redis.service';
@@ -20,7 +19,7 @@ import { ApiException } from 'libs/common/exception/ApiException';
 import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
 import {
   createVerificationCode,
-  getFormatTime,
+  getFormatData,
   setEmailContent,
 } from 'libs/common/utils';
 
@@ -36,28 +35,12 @@ type MailerOptions = {
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-    @InjectRepository(Role) private readonly roleRepository: Repository<Role>,
     @Inject(ConfigService) private readonly configService: ConfigService,
     @Inject(RedisCacheService)
     private readonly redisCacheService: RedisCacheService,
   ) {}
 
   public async createUser(user: CreateUserDto) {
-    const roles = [];
-    try {
-      const role = await this.roleRepository // 使用 repository 创建Query Builder
-        .createQueryBuilder('r') // 查找role实体， r为SQL 别名. SQL 查询中，Role是表名，r是我们分配给该表的别名。
-        .where('r.id = :id', { id: user.roleId || 0 }) //　等同　WHERE role.id = user.roleId || 0. 你多次使用.where，你将覆盖所有以前的WHERE表达式,这时候需要使用andWhere
-        .getOne();
-      if (role) {
-        roles.push(role.id);
-      }
-    } catch (e) {
-      console.log('角色不在');
-      throw new HttpException('角色不存在', 200);
-    }
-    console.log({ roles });
-
     try {
       const res = await this.userRepository
         .createQueryBuilder('u')
@@ -66,11 +49,10 @@ export class UserService {
         .values([
           // 数组形式可以同时添加多个，也可以用object只添加单个
           {
-            ...getFormatTime('create'),
+            ...getFormatData('create'),
             password: user.password,
             name: user.name,
             desc: user.desc,
-            roles,
             email: user.email,
             nick: user.nick,
             address: user.address,
@@ -80,7 +62,6 @@ export class UserService {
         ])
         .execute();
 
-      console.log({ roles, res });
       return res;
     } catch (e) {
       console.log('shibei', e);

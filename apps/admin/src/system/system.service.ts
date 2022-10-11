@@ -1,13 +1,11 @@
-import { Organization } from '@libs/db/entity/OrganizationEntity';
 import { System } from '@libs/db/entity/SystemEntity';
 import { User } from '@libs/db/entity/UserEntity';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ApiException } from 'libs/common/exception/ApiException';
-import { getFormatTime } from 'libs/common/utils';
+import { getFormatData } from 'libs/common/utils';
 import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
 import { NotBrackets, Repository } from 'typeorm';
-import { OrganizationService } from '../organization/organization.service';
 import {
   CreateSystemDto,
   DeleteSystemDto,
@@ -20,22 +18,11 @@ export class SystemService {
   constructor(
     @InjectRepository(System)
     private readonly systemRepository: Repository<System>,
-    @Inject(OrganizationService)
-    private readonly organizationService: OrganizationService,
   ) {}
 
   /** 创建应用 */
   public async createSystem(system: any, user: User) {
     try {
-      const userId = user.id;
-      const organizationCode = system.organization;
-      const organization =
-        await this.organizationService.getOrganizationByMyself({
-          code: organizationCode,
-        });
-      if (!organization) {
-        throw new ApiException('所属应用组失效', 200, ApiCodeEnum.PUBLIC_ERROR);
-      }
       const res = await this.systemRepository
         .createQueryBuilder('s')
         .insert()
@@ -43,9 +30,7 @@ export class SystemService {
         .values([
           {
             ...system,
-            creator: userId,
-            operator: userId,
-            ...getFormatTime('create'),
+            ...getFormatData('create', user),
           },
         ])
         .execute();
@@ -97,12 +82,12 @@ export class SystemService {
   }
 
   /** 更新单个应用 */
-  public async updateSystem(system: any) {
+  public async updateSystem(system: any, user: User) {
     try {
       return await this.systemRepository
         .createQueryBuilder()
         .update(System)
-        .set({ ...system, ...getFormatTime('update') })
+        .set({ ...system, ...getFormatData('update', user) })
         .where('id=:id', { id: system.id })
         .execute();
     } catch (error) {
@@ -150,12 +135,12 @@ export class SystemService {
     }
   }
 
-  public async deleteSystem(data: DeleteSystemDto) {
+  public async deleteSystem(data: DeleteSystemDto, user: User) {
     try {
       return await this.systemRepository
         .createQueryBuilder()
         .update(System)
-        .set({ isDelete: 1, ...getFormatTime('delete') })
+        .set({ isDelete: 1, ...getFormatData('delete', user) })
         .whereInIds([data.id])
         .execute();
     } catch (e) {

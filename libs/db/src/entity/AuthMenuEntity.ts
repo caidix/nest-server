@@ -1,8 +1,9 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { CommonEntity } from './Common';
 
 /** 菜单功能表 - 与菜单 1-1关联，菜单移除时同时移除功能数据 */
 @Entity()
-export class MenuAction {
+export class AuthMenu extends CommonEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -19,15 +20,12 @@ export class MenuAction {
   })
   code: string;
 
-  @Column({ comment: '排序，从1递增', default: 1 })
-  sort: number;
+  // @Column({ comment: '排序，从1递增', default: 1 })
+  // sort: number;
 
-  @Column({ comment: '所属菜单id' })
-  menuId: number;
+  @Column({ comment: '归属应用code -- System' })
+  systemCode: string;
 
-  @Column({ default: '', nullable: true })
-  crateTime: string;
-
-  @Column({ default: '', nullable: true })
-  updateTime: string;
+  @Column({ comment: '所属菜单code -- SystemMenu' })
+  menuCode: string;
 }

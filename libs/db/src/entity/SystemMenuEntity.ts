@@ -57,7 +57,7 @@ export class SystemMenu extends CommonEntity {
   })
   pageOpenMethod: PageOpenEnum;
 
-  @Column({ comment: '归属应用code' })
+  @Column({ comment: '归属应用code -- System' })
   systemCode: string;
 
   @Column({ comment: '归属父级菜单id', default: null })

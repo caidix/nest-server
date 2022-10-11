@@ -1,8 +1,6 @@
 import { User } from './entity/UserEntity';
 import { Organization } from './entity/OrganizationEntity';
-import { Role } from './entity/RoleEntity';
-import { Authority } from './entity/AuthorityEntity';
-import { MenuAction } from './entity/MenuActionEntity';
+import { AuthMenu } from './entity/AuthMenuEntity';
 import { System } from './entity/SystemEntity';
 import { SystemMenu } from './entity/SystemMenuEntity';
 
@@ -15,9 +13,7 @@ import { RedisModule } from '@liaoliaots/nestjs-redis';
 const models = TypeOrmModule.forFeature([
   User,
   Organization,
-  Role,
-  Authority,
-  MenuAction,
+  AuthMenu,
   System,
   SystemMenu,
 ]);

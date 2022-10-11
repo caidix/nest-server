@@ -16,13 +16,13 @@ export class CreateSystemMenuDto {
   name: string;
 
   @ApiProperty({ title: '应用编码', example: '' })
-  code?: string;
+  code: string;
 
   @ApiProperty({ title: '菜单路由', default: '/' })
   url?: string;
 
   @ApiProperty({ title: '菜单描述', default: '' })
-  desc: string;
+  desc?: string;
 
   @ApiProperty({ title: 'Icon图标', default: '' })
   iconUrl?: string;
@@ -50,6 +50,9 @@ export class CreateSystemMenuDto {
 
   @ApiProperty({ title: '归属父级菜单id' })
   parentId: number;
+
+  @ApiProperty({ title: '排序' })
+  sort?: number;
 }
 
 export class UpdateSystemMenu extends CreateSystemMenuDto {

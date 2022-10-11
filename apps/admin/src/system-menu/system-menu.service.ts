@@ -1,11 +1,10 @@
-import { MenuAction } from '@libs/db/entity/MenuActionEntity';
 import { System } from '@libs/db/entity/SystemEntity';
 import { SystemMenu } from '@libs/db/entity/SystemMenuEntity';
 import { User } from '@libs/db/entity/UserEntity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ApiException } from 'libs/common/exception/ApiException';
-import { getFormatTime, getIds } from 'libs/common/utils';
+import { getFormatData, getIds } from 'libs/common/utils';
 import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
 import { findTarget, listToTree } from 'libs/common/utils/tree';
 import { Repository } from 'typeorm';
@@ -32,33 +31,6 @@ export class SystemMenuService {
     user: User,
   ) {
     try {
-      console.log({ systemMenuDto });
-
-      if (systemMenuDto.parentId) {
-        const hasParentMenu = await this.hasParentMenu(systemMenuDto.parentId);
-        if (!hasParentMenu) {
-          throw new ApiException(
-            '父级菜单不存在',
-            200,
-            ApiCodeEnum.PUBLIC_ERROR,
-          );
-        }
-      }
-      const childMenus = await this.getChildrens(
-        systemMenuDto.parentId || null,
-      );
-      let lastMenu = 1;
-      if (childMenus && childMenus.length) {
-        const lastSort = childMenus[childMenus.length - 1].sort;
-        lastMenu = lastSort + 1;
-        if (childMenus.find((menu) => menu.code === systemMenuDto.code)) {
-          throw new ApiException(
-            '菜单编码已存在',
-            200,
-            ApiCodeEnum.PUBLIC_ERROR,
-          );
-        }
-      }
       const res = await this.systemMenuRepository
         .createQueryBuilder('s')
         .insert()
@@ -66,16 +38,12 @@ export class SystemMenuService {
         .values([
           {
             ...systemMenuDto,
-            ...getFormatTime('create'),
-            creator: user.id,
-            operator: user.id,
-            sort: lastMenu,
+            ...getFormatData('create', user),
           },
         ])
         .execute();
 
       return {
-        childMenus,
         res,
       };
     } catch (error) {
@@ -98,8 +66,7 @@ export class SystemMenuService {
         .update(SystemMenu)
         .set({
           ...systemMenuDto,
-          ...getFormatTime('update'),
-          operator: user.id,
+          ...getFormatData('update', user),
         })
         .where('id = :id', { id: systemMenuDto.id })
         .execute();
@@ -160,10 +127,14 @@ export class SystemMenuService {
   }
 
   /** 菜单唯一性 */
-  public async hasMenuCode(code: string) {
+  public async validMenuCode(query: { code: string }) {
     try {
-      const res = await this.systemMenuRepository.findOne({ code });
-      return !!res;
+      const { code } = query;
+      const res = await this.systemMenuRepository.findOne({
+        code,
+        isDelete: 0,
+      });
+      return !!res ? '' : '菜单code不存在';
     } catch (error) {
       throw new ApiException(
         '菜单查找失败' + error,
@@ -173,9 +144,9 @@ export class SystemMenuService {
     }
   }
   /** 是否存在父级菜单 */
-  public async hasParentMenu(id: number) {
+  public async validParentMenu(id: number) {
     try {
-      const res = await this.systemMenuRepository.findOne({ id });
+      const res = await this.systemMenuRepository.findOne({ id, isDelete: 0 });
       return !!res;
     } catch (error) {
       throw new ApiException(
@@ -277,8 +248,7 @@ export class SystemMenuService {
         .update(SystemMenu)
         .set({
           isShow: type as number,
-          ...getFormatTime('update'),
-          operator: user.id,
+          ...getFormatData('update', user),
         })
         .where('id = :id', { id })
         .execute();
