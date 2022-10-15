@@ -83,7 +83,6 @@ export class UserService {
 
     return await this.userRepository
       .createQueryBuilder('user') // 参数别名　user
-      .leftJoinAndSelect('user.roles', 'r') // 自动加载了 user 的 roles. 第一个参数是你要加载的关系，第二个参数是你为此关系的表分配的别名
       .leftJoinAndSelect(
         'user.organizations',
         'org',
@@ -110,7 +109,6 @@ export class UserService {
     const leftJoinCondition = leftJoinConditionList.join('');
     return await this.userRepository
       .createQueryBuilder('u')
-      .leftJoinAndSelect('u.roles', 'r')
       .leftJoinAndSelect(
         'u.organizations',
         'org',
@@ -136,7 +134,6 @@ export class UserService {
     const leftJoinCondition = leftJoinConditionList.join('');
     return await this.userRepository
       .createQueryBuilder('u')
-      .leftJoinAndSelect('u.roles', 'r')
       .leftJoinAndSelect(
         'u.organizations',
         'org',

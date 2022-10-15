@@ -15,7 +15,7 @@ export class CreateSystemMenuDto {
   @ApiProperty({ title: '菜单名称' })
   name: string;
 
-  @ApiProperty({ title: '应用编码', example: '' })
+  @ApiProperty({ title: '菜单编码', example: '' })
   code: string;
 
   @ApiProperty({ title: '菜单路由', default: '/' })
@@ -64,7 +64,12 @@ export class UpdateSystemMenu extends CreateSystemMenuDto {
   sort?: number;
 }
 
-// {"name":"asd","code":"asd","menuType":"menu","isShow":2,"desc":"asd","systemCode":"syncTenant"}
+export class ValidSystemMenu {
+  @ApiProperty({ title: '菜单编码', example: '' })
+  code: string;
+  @ApiProperty({ title: '归属应用code' })
+  systemCode: string;
+}
 
 export enum IMenuOperationEnum {
   DisplayMenu = 1,

@@ -14,6 +14,7 @@ import {
   IMenuOperationEnum,
   OperationMenu,
   UpdateSystemMenu,
+  ValidSystemMenu,
 } from './dto/SystemMenuDto';
 
 @Injectable()
@@ -61,6 +62,10 @@ export class SystemMenuService {
    */
   public async updateSystemMenu(systemMenuDto: UpdateSystemMenu, user: User) {
     try {
+      // 更新时不应影响到code -- 避免被人为故意改动
+      if (systemMenuDto.code) {
+        delete systemMenuDto.code;
+      }
       return await this.systemMenuRepository
         .createQueryBuilder('s')
         .update(SystemMenu)
@@ -127,12 +132,13 @@ export class SystemMenuService {
   }
 
   /** 菜单唯一性 */
-  public async validMenuCode(query: { code: string }) {
+  public async validMenuCode(query: ValidSystemMenu) {
     try {
-      const { code } = query;
+      const { code, systemCode } = query;
       const res = await this.systemMenuRepository.findOne({
         code,
         isDelete: 0,
+        systemCode,
       });
       return !!res ? '' : '菜单code不存在';
     } catch (error) {

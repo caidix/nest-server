@@ -62,33 +62,41 @@ export class SystemMenuController {
   ) {
     try {
       // 判断系统是否存在
+      const { code, systemCode, parentId } = createSystemDto;
       const hasSystem = await this.systemService.validSystem({
-        name: createSystemDto.name,
-        code: createSystemDto.code,
+        code: systemCode,
       });
       if (hasSystem) {
         return returnClient(hasSystem, ApiCodeEnum.PUBLIC_ERROR);
       }
 
       // 判断父级菜单是否存在
-      if (createSystemDto.parentId) {
+      if (parentId) {
         const hasParentMenu = await this.systemMenuiService.validParentMenu(
-          createSystemDto.parentId,
+          parentId,
         );
         if (!hasParentMenu) {
           return returnClient('父级菜单不存在', ApiCodeEnum.PUBLIC_ERROR);
         }
       }
 
+      const hasCode = await this.systemMenuiService.validMenuCode({
+        code: code,
+        systemCode,
+      });
+      if (!hasCode) {
+        return returnClient(hasCode, ApiCodeEnum.PUBLIC_ERROR);
+      }
+
       // 获取当前菜单应有排序
       const childMenus = await this.systemMenuiService.getChildrens(
-        createSystemDto.parentId || null,
+        parentId || null,
       );
       let lastMenu = 1;
       if (childMenus && childMenus.length) {
         const lastSort = childMenus[childMenus.length - 1].sort;
         lastMenu = lastSort + 1;
-        if (childMenus.find((menu) => menu.code === createSystemDto.code)) {
+        if (childMenus.find((menu) => menu.code === code)) {
           return returnClient('菜单编码已存在', ApiCodeEnum.PUBLIC_ERROR);
         }
       }

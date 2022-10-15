@@ -55,10 +55,13 @@ export class SystemController {
   ) {
     try {
       // 判断系统是否存在
-      const hasSystem = await this.systemService.validSystem({
-        name: createSystemDto.name,
-        code: createSystemDto.code,
-      });
+      const hasSystem = await this.systemService.validSystem(
+        {
+          name: createSystemDto.name,
+          code: createSystemDto.code,
+        },
+        true,
+      );
       if (hasSystem) {
         return returnClient(hasSystem, ApiCodeEnum.PUBLIC_ERROR);
       }

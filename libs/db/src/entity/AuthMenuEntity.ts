@@ -16,7 +16,6 @@ export class AuthMenu extends CommonEntity {
   @Column({
     comment: '权限点编码',
     length: 100,
-    unique: true,
   })
   code: string;
 

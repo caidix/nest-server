@@ -24,6 +24,8 @@ export class AuthMenuService {
   /** 创建权限点 */
   public async createAuthMenu(authMenuDto: CreateAuthMenuDto, user: User) {
     try {
+      console.log({ authMenuDto });
+
       return await this.authMenuRepository
         .createQueryBuilder('a')
         .insert()
@@ -36,11 +38,29 @@ export class AuthMenuService {
         ])
         .execute();
     } catch (error) {
+      console.log({ error });
       throw new ApiException(
-        '创建菜单失败:' + error.response || error.errorMessage,
+        '创建权限点失败:' + error.response || error.errorMessage,
         200,
         ApiCodeEnum.PUBLIC_ERROR,
       );
+    }
+  }
+
+  /** 查找单个权限点 */
+  public async getAuthMenu(authMenuDto: any) {
+    try {
+      const queryConditionList = [];
+      Object.keys(authMenuDto).map((key) => {
+        queryConditionList.push(`s.${key}=:${key}`);
+      });
+      const queryCondition = queryConditionList.join(' AND ');
+      return await this.authMenuRepository
+        .createQueryBuilder('s')
+        .where(queryCondition, authMenuDto)
+        .getOne();
+    } catch (error) {
+      throw new ApiException('查询权限点失败', 200, ApiCodeEnum.PUBLIC_ERROR);
     }
   }
 
@@ -51,7 +71,7 @@ export class AuthMenuService {
       const res = await this.authMenuRepository
         .createQueryBuilder('a')
         .where('a.name LIKE :name AND a.code=:code AND a.isDelete=:isDelete', {
-          code,
+          ...query,
           isDelete: 0,
           name: `%${name}%`,
         })

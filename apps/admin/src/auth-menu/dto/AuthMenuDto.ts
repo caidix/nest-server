@@ -49,6 +49,12 @@ export class ValidAuthMenuDto {
 
   @ApiProperty({ title: '权限点名称' })
   name?: string;
+
+  @ApiProperty({ title: '归属应用code' })
+  systemCode: string;
+
+  @ApiProperty({ title: '归属菜单code' })
+  menuCode: string;
 }
 
 export class AuthMenuListDto {

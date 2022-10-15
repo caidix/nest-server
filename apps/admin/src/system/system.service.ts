@@ -45,7 +45,10 @@ export class SystemService {
   }
 
   /** 判断是否存在应用 */
-  public async validSystem(query: { name?: string; code?: string }) {
+  public async validSystem(
+    query: { name?: string; code?: string },
+    validCode = false, // 是否需要额外判断应用重复
+  ) {
     try {
       const { code } = query;
       const res = await this.systemRepository
@@ -55,6 +58,10 @@ export class SystemService {
           isDelete: 0,
         })
         .getOne();
+
+      if (!validCode) {
+        return Boolean(res && res.id) ? '' : '应用code不存在';
+      }
       if (res && res.code === code) {
         return '应用code已重复';
       }

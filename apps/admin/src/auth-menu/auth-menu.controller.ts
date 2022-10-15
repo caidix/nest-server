@@ -55,12 +55,17 @@ export class AuthMenuController {
 
       const hasMenu = await this.systemMenuService.validMenuCode({
         code: menuCode,
+        systemCode,
       });
       if (hasMenu) {
         return returnClient(hasMenu, ApiCodeEnum.PUBLIC_ERROR);
       }
 
-      const hasCode = await this.authMenuService.validAuthMenu({ code });
+      const hasCode = await this.authMenuService.validAuthMenu({
+        code,
+        systemCode,
+        menuCode,
+      });
       if (hasCode) {
         return returnClient(hasCode, ApiCodeEnum.PUBLIC_ERROR);
       }
