@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { CommonEntity } from './Common';
+import { Organization } from './OrganizationEntity';
 
 /** 菜单功能表 - 与菜单 1-1关联，菜单移除时同时移除功能数据 */
 @Entity()
@@ -7,17 +8,25 @@ export class AuthMenu extends CommonEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ comment: '权限点名称', length: 100 })
+  @Column({ comment: '权限点|接口名称', length: 100 })
   name: string;
 
-  @Column({ comment: '权限点描述', length: 500, nullable: true, default: '' })
+  @Column({
+    comment: '权限点|接口描述',
+    length: 500,
+    nullable: true,
+    default: '',
+  })
   desc: string;
 
   @Column({
-    comment: '权限点编码',
+    comment: '权限点|接口编码',
     length: 100,
   })
   code: string;
+
+  @ManyToOne((type) => Organization, (org) => org.id)
+  organizations: Organization[];
 
   // @Column({ comment: '排序，从1递增', default: 1 })
   // sort: number;

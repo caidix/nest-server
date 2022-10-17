@@ -202,10 +202,13 @@ export class UserService {
         .where(queryCondition, {
           isDelete: 0,
         })
-        .select(['name', 'id'])
         .orderBy('u.name', 'ASC')
+        .select(['u.name', 'u.id'])
         .getManyAndCount();
-      return { data: res[0], count: res[1] };
+
+      console.log({ res });
+
+      return { list: res[0], count: res[1] };
     } catch (e) {
       throw new ApiException('查询用户列表失败', 400, ApiCodeEnum.PUBLIC_ERROR);
     }

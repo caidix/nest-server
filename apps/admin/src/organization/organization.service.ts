@@ -153,9 +153,7 @@ export class OrganizationService {
         .of(id)
         .addAndRemove(
           userIds,
-          organization.users
-            ? organization.users.filter((u) => userIds.includes(u.id))
-            : [],
+          organization.users ? organization.users.map((u) => u.id) : [],
         );
       return await this.organizationRepository.findOne(id, {
         relations: ['users'],
@@ -180,13 +178,18 @@ export class OrganizationService {
       const queryCondition = queryConditionList.join(' AND ');
       const res = await this.organizationRepository
         .createQueryBuilder('o')
-        .where(queryCondition, { id, isDelete: false })
+        .where(queryCondition, { id, isDelete: 0 })
         .leftJoinAndSelect('o.users', 'u')
         .orderBy('u.name', 'ASC')
         .getOne();
 
-      const users = res.users || [];
-      return { data: users, total: users.length };
+      const users = (res.users || []).map((user) => {
+        return {
+          name: user.name,
+          id: user.id,
+        };
+      });
+      return { list: users, total: users.length };
     } catch (error) {
       throw new ApiException(
         '用户列表获取失败:' + error,
