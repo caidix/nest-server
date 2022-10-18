@@ -79,8 +79,6 @@ export class UserService {
     const leftJoinConditionOrganizations = {};
     const queryCondition = queryConditionList.join(' AND ');
     const leftJoinCondition = leftJoinConditionList.join('');
-    console.log(123312123);
-
     return await this.userRepository
       .createQueryBuilder('user') // 参数别名　user
       .leftJoinAndSelect(
@@ -102,49 +100,73 @@ export class UserService {
    * @param name
    */
   public async findOneByName(name: string): Promise<User> {
-    const queryConditionList = ['u.isDelete = :isDelete', 'u.name = :name'];
-    const leftJoinConditionList = [];
-    const leftJoinConditionOrganizations = {};
-    const queryCondition = queryConditionList.join(' AND ');
-    const leftJoinCondition = leftJoinConditionList.join('');
-    return await this.userRepository
-      .createQueryBuilder('u')
-      .leftJoinAndSelect(
-        'u.organizations',
-        'org',
-        leftJoinCondition,
-        leftJoinConditionOrganizations,
-      )
-      .where(queryCondition, {
-        name,
-        isDelete: 0,
-      })
-      .getOne();
+    try {
+      const queryConditionList = ['u.isDelete = :isDelete', 'u.name = :name'];
+      const leftJoinConditionList = [];
+      const leftJoinConditionOrganizations = {};
+      const queryCondition = queryConditionList.join(' AND ');
+      const leftJoinCondition = leftJoinConditionList.join('');
+      const res = await this.userRepository
+        .createQueryBuilder('u')
+        .leftJoinAndSelect(
+          'u.organizations',
+          'org',
+          'org.isDelete = :isDelete',
+          {
+            isDelete: 0,
+          },
+        )
+        .leftJoinAndSelect('u.managers', 'm', 'm.isDelete = :isDelete', {
+          isDelete: 0,
+        })
+        .select(['u', 'org', 'org.code', 'm', 'm.code'])
+        .where(queryCondition, {
+          name,
+          isDelete: 0,
+        })
+        .getOne();
+
+      return this.formatUserData(res);
+    } catch (error) {
+      throw new ApiException('获取用户信息失败', 200, ApiCodeEnum.NO_FIND_USER);
+    }
   }
 
   /**
    * 通过id查看
    * @param name
    */
-  public async findOneById(id: number): Promise<User> {
-    const queryConditionList = ['u.isDelete = :isDelete', 'u.id = :id'];
-    const leftJoinConditionList = [];
-    const leftJoinConditionOrganizations = {};
-    const queryCondition = queryConditionList.join(' AND ');
-    const leftJoinCondition = leftJoinConditionList.join('');
-    return await this.userRepository
-      .createQueryBuilder('u')
-      .leftJoinAndSelect(
-        'u.organizations',
-        'org',
-        leftJoinCondition,
-        leftJoinConditionOrganizations,
-      )
-      .where(queryCondition, {
-        id,
-        isDelete: 0,
-      })
-      .getOne();
+  public async findOneById(id: number) {
+    try {
+      const queryConditionList = ['u.isDelete = :isDelete', 'u.id = :id'];
+      const leftJoinConditionList = [];
+      const leftJoinConditionOrganizations = {};
+      const queryCondition = queryConditionList.join(' AND ');
+      const leftJoinCondition = leftJoinConditionList.join('');
+      const res = await this.userRepository
+        .createQueryBuilder('u')
+        .leftJoinAndSelect(
+          'u.organizations',
+          'org',
+          'org.isDelete = :isDelete',
+          {
+            isDelete: 0,
+          },
+        )
+        .leftJoinAndSelect('u.managers', 'm', 'm.isDelete = :isDelete', {
+          isDelete: 0,
+        })
+        .where(queryCondition, {
+          id,
+          isDelete: 0,
+        })
+        .select(['u', 'org', 'org.code', 'm', 'm.code'])
+        .getOne();
+
+      return this.formatUserData(res);
+    } catch (error) {
+      throw new ApiException('获取用户信息失败', 200, ApiCodeEnum.NO_FIND_USER);
+    }
   }
 
   /**
@@ -156,7 +178,19 @@ export class UserService {
       return await this.userRepository
         .createQueryBuilder('u')
         .where('u.name = :name', { name: userName })
-        .addSelect('u.password')
+        .leftJoinAndSelect(
+          'u.organizations',
+          'org',
+          'org.isDelete = :isDelete',
+          {
+            isDelete: 0,
+          },
+        )
+        .leftJoinAndSelect('u.managers', 'm', 'm.isDelete = :isDelete', {
+          isDelete: 0,
+        })
+        .select(['u', 'org', 'org.code', 'm', 'm.code'])
+        .addSelect(['u.password'])
         .getOne();
     } catch (e) {
       throw new ApiException('登录失败', 200, ApiCodeEnum.NO_FIND_USER);
@@ -212,6 +246,17 @@ export class UserService {
     } catch (e) {
       throw new ApiException('查询用户列表失败', 400, ApiCodeEnum.PUBLIC_ERROR);
     }
+  }
+
+  public formatUserData(user: User) {
+    const newData = { ...user };
+    const { organizations = [], managers = [] } = user;
+    delete newData.organizations;
+    delete newData.managers;
+    return {
+      ...newData,
+      roles: managers.concat(organizations).map((i) => i.code),
+    };
   }
 
   /* 发送邮件 */

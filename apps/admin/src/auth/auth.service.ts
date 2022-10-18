@@ -26,7 +26,7 @@ export class AuthService {
    * @param user
    */
   async validateUser(username: string): Promise<User> {
-    return await this.userService.login(username);
+    return await this.userService.findOneByName(username);
   }
 
   /**
