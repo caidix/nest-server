@@ -33,8 +33,11 @@ export class OrganizationController {
   @ApiOperation({
     summary: '获取用户组列表',
   })
-  public async getOrganizationList(@Query() params: any) {
-    const data = await this.organizationService.getOrganizationList(params);
+  public async getOrganizationList(@Query() params: any, @CurrentUser() user) {
+    const data = await this.organizationService.getOrganizationList(
+      params,
+      user,
+    );
     return returnClient('获取成功', ApiCodeEnum.SUCCESS, data);
   }
 
@@ -42,7 +45,10 @@ export class OrganizationController {
   @ApiOperation({
     summary: '创建用户组',
   })
-  public async createOrganization(@Body() createOrganizationDto: any) {
+  public async createOrganization(
+    @Body() createOrganizationDto: any,
+    @CurrentUser() user,
+  ) {
     const hasOrg = await this.organizationService.getOrganizationByMyself({
       code: createOrganizationDto.code,
     });
@@ -51,6 +57,7 @@ export class OrganizationController {
     }
     const data = await this.organizationService.createOrganization(
       createOrganizationDto,
+      user,
     );
     return returnClient('创建成功', ApiCodeEnum.SUCCESS, data);
   }

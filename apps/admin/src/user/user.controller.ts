@@ -37,7 +37,7 @@ export class UserController {
     summary: '用户注册',
   })
   public async createUser(@Body() createUserDto: CreateUserDto) {
-    let userInfo: User = await this.userService.findSpecifiedUser(
+    const userInfo = await this.userService.findSpecifiedUser(
       createUserDto.name,
     );
     if (userInfo) {
@@ -53,10 +53,10 @@ export class UserController {
         await this.userService.verifyEmailerCode(email, verifyCode);
       }
       await this.userService.createUser(createUserDto);
-      userInfo = await this.userService.findSpecifiedUser(createUserDto.name);
+      const res = await this.userService.findSpecifiedUser(createUserDto.name);
       return {
         message: '注册成功',
-        data: userInfo,
+        data: res,
         code: 0,
       };
     } catch (e) {

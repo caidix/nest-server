@@ -25,8 +25,10 @@ export class AuthService {
    * 用户验证
    * @param user
    */
-  async validateUser(username: string): Promise<User> {
-    return await this.userService.findOneByName(username);
+  async validateUser(
+    username: string,
+  ): Promise<Omit<User, 'organizations' | 'managers'>> {
+    return await this.userService.findSpecifiedUser(username);
   }
 
   /**

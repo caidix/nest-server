@@ -1,19 +1,18 @@
 # 从 0-1 搭建一个 nestjs + mysql/typeORM 系统
 
-
 ## 目标
 
-- 分成多个服务✅
-- 登录鉴权✅
-- 统一报错，正常返回格式拦截过滤器✅
-- 添加swagger文档并跟进书写✍️
-- 加入redis缓存机制， 并实现单点登录功能✅
-- 加入winston进行日志收集❎
-- 加入定时任务node-schedule❎
-- 加入oss文件上传❎
-- 加入kafka❎
-- 加入websocket❎
-- 加入nodemailer, 写一个发邮件的小函数完成验证码功能✅
+- 分成多个服务 ✅
+- 登录鉴权 ✅
+- 统一报错，正常返回格式拦截过滤器 ✅
+- 添加 swagger 文档并跟进书写 ✍️
+- 加入 redis 缓存机制， 并实现单点登录功能 ✅
+- 加入 winston 进行日志收集 ❎
+- 加入定时任务 node-schedule❎
+- 加入 oss 文件上传 ❎
+- 加入 kafka❎
+- 加入 websocket❎
+- 加入 nodemailer, 写一个发邮件的小函数完成验证码功能 ✅
 
 ## 搭建目录结构
 
@@ -62,6 +61,7 @@
 - nest g(generate) mo(module)
 - 为子项目添加模块 : nest g mo -p admin users (表示在 admin 这个子项目下添加 users 模块)
 - 为子项目添加控制器 : nest g co -p admin users (表示在 admin 这个子项目下添加 users 控制器)
+- 为子项目增加服务： nest g s -p admin users (表示在 admin 这个子项目下添加 users 服务)
 
 ## 坑点
 

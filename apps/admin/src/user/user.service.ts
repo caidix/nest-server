@@ -79,7 +79,7 @@ export class UserService {
     const leftJoinConditionOrganizations = {};
     const queryCondition = queryConditionList.join(' AND ');
     const leftJoinCondition = leftJoinConditionList.join('');
-    return await this.userRepository
+    const res = await this.userRepository
       .createQueryBuilder('user') // 参数别名　user
       .leftJoinAndSelect(
         'user.organizations',
@@ -87,11 +87,17 @@ export class UserService {
         leftJoinCondition,
         leftJoinConditionOrganizations, // 也可以在leftJoinAndSelect中添加表达式，它相当于为你使用了where
       )
+      .leftJoinAndSelect('user.managers', 'm', 'm.isDelete = :isDelete', {
+        isDelete: 0,
+      })
       .where(queryCondition, {
         name,
         isDelete: 0,
       })
+      .addSelect(['user.password'])
       .getOne();
+
+    return this.formatUserData(res);
     // LEFT JOIN和INNER JOIN之间的区别在于，如果没有任何 photos，INNER JOIN将不会返回 user。 即使没有 photos，LEFT JOIN也会返回 user。
   }
 
@@ -99,7 +105,7 @@ export class UserService {
    * 通过用户名查看
    * @param name
    */
-  public async findOneByName(name: string): Promise<User> {
+  public async findOneByName(name: string): Promise<any> {
     try {
       const queryConditionList = ['u.isDelete = :isDelete', 'u.name = :name'];
       const leftJoinConditionList = [];
@@ -163,7 +169,10 @@ export class UserService {
         .select(['u', 'org', 'org.code', 'm', 'm.code'])
         .getOne();
 
-      return this.formatUserData(res);
+      const formatRes = this.formatUserData(res);
+      delete formatRes.managers;
+      delete formatRes.organizations;
+      return formatRes;
     } catch (error) {
       throw new ApiException('获取用户信息失败', 200, ApiCodeEnum.NO_FIND_USER);
     }
@@ -249,13 +258,14 @@ export class UserService {
   }
 
   public formatUserData(user: User) {
-    const newData = { ...user };
     const { organizations = [], managers = [] } = user;
-    delete newData.organizations;
-    delete newData.managers;
+    const _organizations = organizations.map((i) => i.code);
+    const _managers = managers.map((i) => i.code);
     return {
-      ...newData,
-      roles: managers.concat(organizations).map((i) => i.code),
+      ...user,
+      organizationCodes: _organizations,
+      managerCodes: _managers,
+      roles: [...new Set(_organizations.concat(_managers))],
     };
   }
 

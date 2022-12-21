@@ -10,6 +10,7 @@ import { OrganizationModule } from './organization/organization.module';
 import { SystemMenuModule } from './system-menu/system-menu.module';
 import { AuthMenuController } from './auth-menu/auth-menu.controller';
 import { AuthMenuModule } from './auth-menu/auth-menu.module';
+import { ApiResourceModule } from './api-resource/api-resource.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AuthMenuModule } from './auth-menu/auth-menu.module';
     OrganizationModule,
     SystemMenuModule,
     AuthMenuModule,
+    ApiResourceModule,
   ],
   controllers: [AdminController, AuthMenuController],
   providers: [AdminService, RedisCacheService],

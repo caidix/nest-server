@@ -1,6 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { CommonEntity } from './Common';
-import { Organization } from './OrganizationEntity';
 
 /** 菜单功能表 - 与菜单 1-1关联，菜单移除时同时移除功能数据 */
 @Entity()
@@ -24,9 +23,6 @@ export class AuthMenu extends CommonEntity {
     length: 100,
   })
   code: string;
-
-  @ManyToOne((type) => Organization, (org) => org.id)
-  organizations: Organization[];
 
   // @Column({ comment: '排序，从1递增', default: 1 })
   // sort: number;

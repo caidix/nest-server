@@ -21,6 +21,8 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
     if (!user) {
       throw new BadRequestException('用户名或密码不正确1 - 用户不存在');
     }
+    console.log({ user, password });
+
     if (password !== user.password) {
       throw new BadRequestException('用户名或密码不正确2');
     }

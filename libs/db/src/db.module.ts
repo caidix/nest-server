@@ -3,6 +3,7 @@ import { Organization } from './entity/OrganizationEntity';
 import { AuthMenu } from './entity/AuthMenuEntity';
 import { System } from './entity/SystemEntity';
 import { SystemMenu } from './entity/SystemMenuEntity';
+import { ApiResource } from './entity/ApiResourceEntity';
 
 import { Module } from '@nestjs/common';
 import { DbService } from './db.service';
@@ -16,6 +17,7 @@ const models = TypeOrmModule.forFeature([
   AuthMenu,
   System,
   SystemMenu,
+  ApiResource,
 ]);
 
 @Module({

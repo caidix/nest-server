@@ -9,7 +9,6 @@ import {
 } from 'typeorm';
 import { System } from './SystemEntity';
 import { User } from './UserEntity';
-import { AuthMenu } from './AuthMenuEntity';
 
 /**
  * 用户组织管理
@@ -38,10 +37,6 @@ export class Organization {
   @ManyToMany((type) => User, (user) => user.organizations)
   @JoinTable()
   users: User[];
-
-  @OneToMany((type) => AuthMenu, (auth) => auth.organizations)
-  @JoinTable()
-  auth: AuthMenu;
 
   @Column({ default: 0 })
   isDelete: number;

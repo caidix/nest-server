@@ -18,23 +18,20 @@ export class OrganizationService {
   ) {}
 
   /** 创建用户组 */
-  public async createOrganization(organization: any) {
+  public async createOrganization(organization: any, user: User) {
     try {
-      const res = await this.organizationRepository
-        .createQueryBuilder('o')
-        .insert()
-        .into(Organization)
-        .values([
-          {
-            ...organization,
-            ...getFormatData('create'),
-          },
-        ])
-        .execute();
+      console.log({ organization });
+
+      const res = await this.organizationRepository.save({
+        ...organization,
+        managers: [user],
+        users: [user],
+        ...getFormatData('create', user),
+      });
       return res;
     } catch (error) {
       throw new ApiException(
-        '创建应用失败' + error,
+        '创建用户组失败' + error,
         200,
         ApiCodeEnum.PUBLIC_ERROR,
       );
@@ -89,19 +86,26 @@ export class OrganizationService {
   }
 
   /** 查询用户组列表 */
-  public async getOrganizationList(query: any) {
+  public async getOrganizationList(query: any, user) {
     try {
       const { name, size = 10, page = 1 } = query;
       const queryConditionList = ['o.isDelete = :isDelete'];
       if (name) {
         queryConditionList.push('o.name LIKE :name');
       }
+      if (user) {
+        queryConditionList.push('u.id = :id');
+      }
       const queryCondition = queryConditionList.join(' AND ');
       const res = await this.organizationRepository
         .createQueryBuilder('o')
+        .leftJoinAndSelect('o.users', 'u', 'u.isDelete = :isDelete', {
+          isDelete: 0,
+        })
         .where(queryCondition, {
           name: `%${name}%`,
           isDelete: 0,
+          id: user.id,
         })
         .orderBy('o.name', 'ASC')
         .addOrderBy('o.createTime')

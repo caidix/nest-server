@@ -90,24 +90,25 @@ export const getFormatData = (type: FormatTimeType, user?: User) => {
         return pre;
       }, {}) as FormatDataType;
   };
+  const userId = user?.id || undefined;
   switch (type) {
     case 'create':
       return dataPicker({
         createTime: baseTime,
         updateTime: baseTime,
-        creator: user.id,
-        operator: user.id,
+        creator: userId,
+        operator: userId,
       });
     case 'update':
       return dataPicker({
         updateTime: baseTime,
-        operator: user.id,
+        operator: userId,
       });
     case 'delete':
       return dataPicker({
         updateTime: baseTime,
         deleteTime: baseTime,
-        operator: user.id,
+        operator: userId,
         isDelete: 1,
       });
     default:
