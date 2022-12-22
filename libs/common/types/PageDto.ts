@@ -15,9 +15,9 @@ export class PageDto {
     { allowNaN: false },
     { message: '缺少当前页码', context: { errorCode: 12 } },
   )
-  page: number;
+  current: number;
 
   @ApiProperty({ description: '一页几行', example: 10 })
   @IsNumber({}, { message: '缺少当前页数', context: { errorCode: 12 } })
-  size: number;
+  pageSize: number;
 }

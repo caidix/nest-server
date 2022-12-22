@@ -22,9 +22,9 @@ export class QuerySystemListDto {
   @ApiProperty({ title: '组织归属' })
   organization?: number;
   @ApiProperty({ title: '分页尺寸', example: 10 })
-  size?: number;
+  pageSize?: number;
   @ApiProperty({ title: '当前页', example: 1 })
-  page?: number;
+  current?: number;
 }
 
 export class CreateSystemDto {

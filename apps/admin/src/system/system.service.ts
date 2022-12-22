@@ -107,15 +107,22 @@ export class SystemService {
   }
 
   /** 获取应用列表 */
-  public async getSystemList(query: QuerySystemListDto) {
+  public async getSystemList(query: QuerySystemListDto, user) {
     try {
-      const { search, organization, size = 10, page = 1 } = query;
+      const { search, organization, pageSize = 10, current = 1 } = query;
       const queryConditionList = ['s.isDelete = :isDelete'];
       if (organization) {
         queryConditionList.push('s.organization=:organization');
       }
       if (search) {
         queryConditionList.push('s.name LIKE :name OR s.code = :code');
+      }
+      /** 用户没有列表权限 */
+      if (user) {
+        if (!user.roles || !user.roles.length) {
+          return { list: [], total: 0, pageSize, current };
+        }
+        queryConditionList.push('s.organization in (:...roles)');
       }
       const res = await this.systemRepository
         .createQueryBuilder('s')
@@ -124,6 +131,7 @@ export class SystemService {
           organization,
           isDelete: 0,
           code: search,
+          roles: user.roles,
         })
         // 非关联型联查方法
         // .leftJoinAndMapOne(
@@ -132,13 +140,36 @@ export class SystemService {
         //   'photo',
         //   's.organization=photo.code',
         // )
-        .skip((page - 1) * size)
-        .take(size)
+        .skip((current - 1) * pageSize)
+        .take(pageSize)
         .getManyAndCount();
-      return { list: res[0], total: res[1], size, page };
+      return { list: res[0], total: res[1], pageSize, current };
     } catch (error) {
       console.log({ error });
       throw new ApiException('查询应用失败', 200, ApiCodeEnum.PUBLIC_ERROR);
+    }
+  }
+
+  public async getAllSystemList(user) {
+    try {
+      /** 用户没有列表权限 */
+      if (user) {
+        if (!user.roles || !user.roles.length) {
+          return { list: [] };
+        }
+      }
+      const res = await this.systemRepository
+        .createQueryBuilder('s')
+        .where('s.isDelete = :isDelete AND s.organization in (:...roles)', {
+          roles: user.roles,
+          isDelete: 0,
+        })
+        .getMany();
+      return {
+        list: res,
+      };
+    } catch (error) {
+      throw new ApiException('获取应用失败', 200, ApiCodeEnum.PUBLIC_ERROR);
     }
   }
 

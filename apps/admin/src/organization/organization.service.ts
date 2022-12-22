@@ -88,7 +88,7 @@ export class OrganizationService {
   /** 查询用户组列表 */
   public async getOrganizationList(query: any, user) {
     try {
-      const { name, size = 10, page = 1 } = query;
+      const { name, pageSize = 10, current = 1 } = query;
       const queryConditionList = ['o.isDelete = :isDelete'];
       if (name) {
         queryConditionList.push('o.name LIKE :name');
@@ -109,10 +109,10 @@ export class OrganizationService {
         })
         .orderBy('o.name', 'ASC')
         .addOrderBy('o.createTime')
-        .skip((page - 1) * size)
-        .take(size)
+        .skip((current - 1) * pageSize)
+        .take(pageSize)
         .getManyAndCount();
-      return { list: res[0], total: res[1], size, page };
+      return { list: res[0], total: res[1], pageSize, current };
     } catch (e) {
       console.log({ e });
       throw new ApiException('查询用户组失败', 400, ApiCodeEnum.PUBLIC_ERROR);
@@ -206,7 +206,7 @@ export class OrganizationService {
   /** 根据组织id获取用户非关联用户组列表 */
   public async getUnOrganizationUserList(data: any) {
     try {
-      const { id, size = 10, page = 1 } = data;
+      const { id, pageSize = 10, current = 1 } = data;
       const res = await this.userRepository
         .createQueryBuilder('u')
         .select(['u.id', 'u.name'])
@@ -217,10 +217,10 @@ export class OrganizationService {
           new NotBrackets((qb) => qb.where('o.id IN (:...ids)', { ids: [id] })),
         )
         .orderBy('u.id', 'ASC')
-        .skip((page - 1) * size)
-        .take(size)
+        .skip((current - 1) * pageSize)
+        .take(pageSize)
         .getManyAndCount();
-      return { list: res[0], total: res[1], size, page };
+      return { list: res[0], total: res[1], pageSize, current };
     } catch (error) {
       throw new ApiException(
         '用户列表获取失败:' + error,

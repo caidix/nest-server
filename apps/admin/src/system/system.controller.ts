@@ -36,9 +36,25 @@ export class SystemController {
   @ApiOperation({
     summary: '获取应用列表',
   })
-  public async getSystemList(@Query() params: QuerySystemListDto) {
+  public async getSystemList(
+    @Query() params: QuerySystemListDto,
+    @CurrentUser() user,
+  ) {
     try {
-      const data = await this.systemService.getSystemList(params);
+      const data = await this.systemService.getSystemList(params, user);
+      return returnClient('获取成功', ApiCodeEnum.SUCCESS, data);
+    } catch (error) {
+      return returnClient(error.errorMessage, error.code);
+    }
+  }
+
+  @Get('all-list')
+  @ApiOperation({
+    summary: '获取所有应用列表',
+  })
+  public async getAllSystemList(@CurrentUser() user) {
+    try {
+      const data = await this.systemService.getAllSystemList(user);
       return returnClient('获取成功', ApiCodeEnum.SUCCESS, data);
     } catch (error) {
       return returnClient(error.errorMessage, error.code);

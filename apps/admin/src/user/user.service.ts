@@ -209,7 +209,7 @@ export class UserService {
   /** 用户列表 */
   public async getUserList(query: any) {
     try {
-      const { name, size = 10, page = 1 } = query;
+      const { name, pageSize = 10, current = 1 } = query;
       const queryConditionList = ['o.isDelete = :isDelete'];
       if (name) {
         queryConditionList.push('o.name LIKE :name');
@@ -222,10 +222,10 @@ export class UserService {
           isDelete: 0,
         })
         .orderBy('o.name', 'ASC')
-        .skip((page - 1) * size)
-        .take(size)
+        .skip((current - 1) * pageSize)
+        .take(pageSize)
         .getManyAndCount();
-      return { list: res[0], total: res[1], size, page };
+      return { list: res[0], total: res[1], pageSize, current };
     } catch (e) {
       console.log({ e });
       throw new ApiException('查询用户列表失败', 400, ApiCodeEnum.PUBLIC_ERROR);
