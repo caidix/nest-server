@@ -48,16 +48,20 @@ export class User {
   @Column({ default: 0, comment: '状态' })
   status: number;
 
-  // 组织
-  @ManyToMany(() => Organization, (organization) => organization.users)
-  organizations: Organization[];
+  // 所属组织
+  // @ManyToMany(() => Organization, (organization) => organization.users)
+  @Column({ comment: '所属组织' })
+  organization: number;
 
   // 组织管理员
-  @ManyToMany(() => Organization, (organization) => organization.managers)
-  managers: Organization[];
+  // @ManyToMany(() => Organization, (organization) => organization.managers)
+  // managers: Organization[];
 
   @Column({ default: 0, comment: '是否不可用' })
   isDelete: number;
+
+  @Column({ default: false, comment: '是否是超级管理员' })
+  isSuper: boolean;
 
   @Column({ default: false, comment: '是否完成身份验证' })
   verification: boolean;

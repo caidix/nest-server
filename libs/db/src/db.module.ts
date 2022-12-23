@@ -14,12 +14,12 @@ import { RedisModule } from '@liaoliaots/nestjs-redis';
 
 const models = TypeOrmModule.forFeature([
   User,
-  Organization,
-  AuthMenu,
-  System,
-  SystemMenu,
-  ApiResource,
-  Role,
+  // Organization,
+  // AuthMenu,
+  // System,
+  // SystemMenu,
+  // ApiResource,
+  // Role,
 ]);
 
 @Module({

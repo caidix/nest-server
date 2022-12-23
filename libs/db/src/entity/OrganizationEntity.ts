@@ -1,14 +1,5 @@
-import {
-  Column,
-  Entity,
-  JoinTable,
-  ManyToMany,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  OneToMany,
-} from 'typeorm';
-import { System } from './SystemEntity';
-import { User } from './UserEntity';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { CommonEntity } from './Common';
 
 /**
  * 用户组织管理
@@ -17,36 +8,22 @@ import { User } from './UserEntity';
  * 用户与组织关联，组织下又关联角色， 当用户离开该组织时， 用户在该组织下的角色会被同步移除
  */
 @Entity()
-export class Organization {
+export class Organization extends CommonEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ length: 500, default: '' })
   name: string;
 
+  @Column({ name: 'parent_id', nullable: true })
+  parentId: number;
+
   @Column({ default: '', nullable: true })
   desc: string;
 
-  @Column({ default: '' })
+  @Column({ default: '', nullable: true })
   code: string;
 
-  @ManyToMany((type) => User, (user) => user.managers)
-  @JoinTable()
-  managers: User[];
-
-  @ManyToMany((type) => User, (user) => user.organizations)
-  @JoinTable()
-  users: User[];
-
-  @Column({ default: 0 })
-  isDelete: number;
-
-  @Column({ default: '', nullable: true })
-  createTime: string;
-
-  @Column({ default: '', nullable: true })
-  updateTime: string;
-
-  @Column({ default: '', nullable: true })
-  deleteTime: string;
+  @Column({ default: 0, nullable: true, comment: '权重排序，默认为0' })
+  sort: number;
 }

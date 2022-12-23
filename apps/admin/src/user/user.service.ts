@@ -81,15 +81,15 @@ export class UserService {
     const leftJoinCondition = leftJoinConditionList.join('');
     const res = await this.userRepository
       .createQueryBuilder('user') // 参数别名　user
-      .leftJoinAndSelect(
-        'user.organizations',
-        'org',
-        leftJoinCondition,
-        leftJoinConditionOrganizations, // 也可以在leftJoinAndSelect中添加表达式，它相当于为你使用了where
-      )
-      .leftJoinAndSelect('user.managers', 'm', 'm.isDelete = :isDelete', {
-        isDelete: 0,
-      })
+      // .leftJoinAndSelect(
+      //   'user.organizations',
+      //   'org',
+      //   leftJoinCondition,
+      //   leftJoinConditionOrganizations, // 也可以在leftJoinAndSelect中添加表达式，它相当于为你使用了where
+      // )
+      // .leftJoinAndSelect('user.managers', 'm', 'm.isDelete = :isDelete', {
+      //   isDelete: 0,
+      // })
       .where(queryCondition, {
         name,
         isDelete: 0,
@@ -97,7 +97,7 @@ export class UserService {
       .addSelect(['user.password'])
       .getOne();
 
-    return this.formatUserData(res);
+    return res;
     // LEFT JOIN和INNER JOIN之间的区别在于，如果没有任何 photos，INNER JOIN将不会返回 user。 即使没有 photos，LEFT JOIN也会返回 user。
   }
 
@@ -114,17 +114,17 @@ export class UserService {
       const leftJoinCondition = leftJoinConditionList.join('');
       const res = await this.userRepository
         .createQueryBuilder('u')
-        .leftJoinAndSelect(
-          'u.organizations',
-          'org',
-          'org.isDelete = :isDelete',
-          {
-            isDelete: 0,
-          },
-        )
-        .leftJoinAndSelect('u.managers', 'm', 'm.isDelete = :isDelete', {
-          isDelete: 0,
-        })
+        // .leftJoinAndSelect(
+        //   'u.organizations',
+        //   'org',
+        //   'org.isDelete = :isDelete',
+        //   {
+        //     isDelete: 0,
+        //   },
+        // )
+        // .leftJoinAndSelect('u.managers', 'm', 'm.isDelete = :isDelete', {
+        //   isDelete: 0,
+        // })
         .select(['u', 'org', 'org.code', 'm', 'm.code'])
         .where(queryCondition, {
           name,
@@ -132,7 +132,7 @@ export class UserService {
         })
         .getOne();
 
-      return this.formatUserData(res);
+      return res;
     } catch (error) {
       throw new ApiException('获取用户信息失败', 200, ApiCodeEnum.NO_FIND_USER);
     }
@@ -151,17 +151,6 @@ export class UserService {
       const leftJoinCondition = leftJoinConditionList.join('');
       const res = await this.userRepository
         .createQueryBuilder('u')
-        .leftJoinAndSelect(
-          'u.organizations',
-          'org',
-          'org.isDelete = :isDelete',
-          {
-            isDelete: 0,
-          },
-        )
-        .leftJoinAndSelect('u.managers', 'm', 'm.isDelete = :isDelete', {
-          isDelete: 0,
-        })
         .where(queryCondition, {
           id,
           isDelete: 0,
@@ -169,10 +158,7 @@ export class UserService {
         .select(['u', 'org', 'org.code', 'm', 'm.code'])
         .getOne();
 
-      const formatRes = this.formatUserData(res);
-      delete formatRes.managers;
-      delete formatRes.organizations;
-      return formatRes;
+      return res;
     } catch (error) {
       throw new ApiException('获取用户信息失败', 200, ApiCodeEnum.NO_FIND_USER);
     }
@@ -187,17 +173,6 @@ export class UserService {
       return await this.userRepository
         .createQueryBuilder('u')
         .where('u.name = :name', { name: userName })
-        .leftJoinAndSelect(
-          'u.organizations',
-          'org',
-          'org.isDelete = :isDelete',
-          {
-            isDelete: 0,
-          },
-        )
-        .leftJoinAndSelect('u.managers', 'm', 'm.isDelete = :isDelete', {
-          isDelete: 0,
-        })
         .select(['u', 'org', 'org.code', 'm', 'm.code'])
         .addSelect(['u.password'])
         .getOne();
@@ -257,17 +232,17 @@ export class UserService {
     }
   }
 
-  public formatUserData(user: User) {
-    const { organizations = [], managers = [] } = user;
-    const _organizations = organizations.map((i) => i.code);
-    const _managers = managers.map((i) => i.code);
-    return {
-      ...user,
-      organizationCodes: _organizations,
-      managerCodes: _managers,
-      roles: [...new Set(_organizations.concat(_managers))],
-    };
-  }
+  // public formatUserData(user: User) {
+  //   const { organizations = [], managers = [] } = user;
+  //   const _organizations = organizations.map((i) => i.code);
+  //   const _managers = managers.map((i) => i.code);
+  //   return {
+  //     ...user,
+  //     organizationCodes: _organizations,
+  //     managerCodes: _managers,
+  //     roles: [...new Set(_organizations.concat(_managers))],
+  //   };
+  // }
 
   /* 发送邮件 */
   public async sendMailer(mailOptions: MailerOptions) {
