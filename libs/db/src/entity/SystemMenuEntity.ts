@@ -3,8 +3,9 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 import { CommonEntity } from './Common';
 
 export enum IMenuTypeEnum {
-  Menu = 1,
-  Page = 2,
+  Menu = 1, // 菜单
+  Page = 2, // 页面
+  Auth = 3, // 权限点
 }
 export enum PageOpenEnum {
   Inline = 1,
@@ -45,15 +46,15 @@ export class SystemMenu extends CommonEntity {
 
   @Column('enum', {
     comment: '显示隐藏 1：显示  2：隐藏',
-    default: IShowStatusEnum.Hidden,
     enum: IShowStatusEnum,
+    nullable: true,
   })
   isShow: IShowStatusEnum;
 
   @Column('enum', {
     comment: '页面打开方式 1：内嵌  2：跳转',
-    default: PageOpenEnum.Inline,
     enum: PageOpenEnum,
+    nullable: true,
   })
   pageOpenMethod: PageOpenEnum;
 

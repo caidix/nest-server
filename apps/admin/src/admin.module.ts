@@ -11,6 +11,7 @@ import { SystemMenuModule } from './system-menu/system-menu.module';
 import { AuthMenuController } from './auth-menu/auth-menu.controller';
 import { AuthMenuModule } from './auth-menu/auth-menu.module';
 import { ApiResourceModule } from './api-resource/api-resource.module';
+import { RoleModule } from './role/role.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ApiResourceModule } from './api-resource/api-resource.module';
     SystemMenuModule,
     AuthMenuModule,
     ApiResourceModule,
+    RoleModule,
   ],
   controllers: [AdminController, AuthMenuController],
   providers: [AdminService, RedisCacheService],
