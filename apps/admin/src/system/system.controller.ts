@@ -84,13 +84,13 @@ export class SystemController {
 
       // 判断组织是否存在
       const organizationCode = createSystemDto.organization;
-      const hasOrganization =
-        await this.organizationService.getOrganizationByMyself({
-          code: organizationCode,
-        });
-      if (!hasOrganization) {
-        return returnClient('所属应用组失效', ApiCodeEnum.PUBLIC_ERROR);
-      }
+      // const hasOrganization =
+      //   await this.organizationService.getOrganizationByMyself({
+      //     code: organizationCode,
+      //   });
+      // if (!hasOrganization) {
+      //   return returnClient('所属应用组失效', ApiCodeEnum.PUBLIC_ERROR);
+      // }
 
       const data = await this.systemService.createSystem(createSystemDto, user);
       return returnClient('创建成功', ApiCodeEnum.SUCCESS, data);

@@ -19,13 +19,16 @@ import { RoleModule } from './role/role.module';
     AuthModule,
     UserModule,
     // SystemModule,
-    // OrganizationModule,
+    OrganizationModule,
     // SystemMenuModule,
     // AuthMenuModule,
     // ApiResourceModule,
     // RoleModule,
   ],
-  controllers: [AdminController, AuthMenuController],
+  controllers: [
+    AdminController,
+    // AuthMenuController
+  ],
   providers: [AdminService, RedisCacheService],
 })
 export class AdminModule {}

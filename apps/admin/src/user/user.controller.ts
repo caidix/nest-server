@@ -17,11 +17,16 @@ import { CurrentUser } from 'libs/common/decorator/current-user.decorator';
 import { returnClient } from 'libs/common/return/returnClient';
 import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
 import { AuthService } from '../auth/auth.service';
-import { CreateUserDto } from './dto/CreatUserDto';
 import { CreateEmailDto, VerifyEmailDto } from './dto/EmailDto';
 import { LoginUserDto } from './dto/LoginUserDto';
 import { UserService } from './user.service';
 import fetch from 'node-fetch';
+import {
+  QueryUserListDto,
+  CreateUserDto,
+  UpdateUserDto,
+  DeleteUserDto,
+} from './user.dto';
 
 @Controller('user')
 @ApiTags('users')
@@ -36,7 +41,7 @@ export class UserController {
   @ApiOperation({
     summary: '用户注册',
   })
-  public async createUser(@Body() createUserDto: CreateUserDto) {
+  public async registerUser(@Body() createUserDto: CreateUserDto) {
     const userInfo = await this.userService.findSpecifiedUser(
       createUserDto.name,
     );
@@ -66,6 +71,40 @@ export class UserController {
         code: -1,
       };
     }
+  }
+
+  @Post('create')
+  @ApiOperation({
+    summary: '用户管理创建用户',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  public async createUser(@Body() createUserDto: CreateUserDto) {
+    const userInfo = await this.userService.findSpecifiedUser(
+      createUserDto.name,
+    );
+    if (userInfo) {
+      return returnClient('用户名被占用', ApiCodeEnum.USER_REGISTERED);
+    }
+    await this.userService.createUser(createUserDto);
+    const res = await this.userService.findSpecifiedUser(createUserDto.name);
+    return returnClient('注册成功', ApiCodeEnum.SUCCESS, { data: res });
+  }
+
+  @Post('update')
+  @ApiOperation({
+    summary: '更新用户信息',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  public async updateUser(
+    @Body() updateUserDto: UpdateUserDto,
+    @CurrentUser() user: User,
+  ) {
+    if (!user.isSuper && updateUserDto.id !== user.id) {
+      return returnClient('暂无操作权限', ApiCodeEnum.NO_AUTH);
+    }
+    await this.userService.updateUserInfo(updateUserDto);
+    // const res =
+    return returnClient('更新成功', ApiCodeEnum.SUCCESS);
   }
 
   @Post('login')
@@ -115,7 +154,7 @@ export class UserController {
   @Post('get-user-list')
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
-  public async getUserList(@Body() params: any) {
+  public async getUserList(@Body() params: QueryUserListDto) {
     const data = await this.userService.getUserList(params);
     return returnClient('获取成功', ApiCodeEnum.SUCCESS, data);
   }
@@ -126,6 +165,18 @@ export class UserController {
   public async getAllUserList() {
     const data = await this.userService.getAllList();
     return returnClient('获取成功', ApiCodeEnum.SUCCESS, data);
+  }
+
+  @ApiOperation({
+    summary: '根据ID列表删除管理员',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Post('delete')
+  async delete(@Body() dto: DeleteUserDto) {
+    await this.userService.deleteUsers(dto.userIds);
+    // await this.userService.multiForbidden(dto.userIds);
+    return returnClient('删除用户成功', ApiCodeEnum.SUCCESS);
   }
 
   @Get('test')

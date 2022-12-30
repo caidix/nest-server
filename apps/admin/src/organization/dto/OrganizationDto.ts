@@ -36,9 +36,26 @@ export class CreateOrganizationDto {
 
   @ApiProperty({ title: '父级id' })
   parentId?: number;
+
+  @ApiProperty({ title: '组织排序' })
+  sort?: number;
+}
+
+export class UpdateOrganizationDto extends CreateOrganizationDto {
+  @ApiProperty({ title: '组织id', example: 1 })
+  id: number;
 }
 
 export class DeleteOrganizationDto {
   @ApiProperty({ title: '父级id' })
   parentId?: number;
+}
+export class TransferOrganizationDto {
+  @ApiProperty({ description: '需要转移的用户列表编号', type: [Number] })
+  userIds: number[];
+
+  @ApiProperty({ description: '需要转移过去的系统部门ID' })
+  @IsInt()
+  @Min(0)
+  organization: number;
 }

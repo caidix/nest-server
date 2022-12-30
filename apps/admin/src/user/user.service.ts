@@ -1,18 +1,18 @@
 import * as nodemailer from 'nodemailer';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import * as dayjs from 'dayjs';
 import { HttpException, Inject, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import fetch from 'node-fetch';
 
 // Entity Service
-import { User } from '@libs/db/entity/UserEntity';
+import { User, UserStatusEnum } from '@libs/db/entity/UserEntity';
 import { ConfigService } from '@nestjs/config';
 import { RedisCacheService } from '../redis/redis.service';
 
 // Dto
-import { CreateUserDto } from './dto/CreatUserDto';
 import { LoginUserDto } from './dto/LoginUserDto';
+import { QueryUserListDto, CreateUserDto, UpdateUserDto } from './user.dto';
 
 // Utils
 import { ApiException } from 'libs/common/exception/ApiException';
@@ -22,6 +22,7 @@ import {
   getFormatData,
   setEmailContent,
 } from 'libs/common/utils';
+import { Organization } from '@libs/db/entity/OrganizationEntity';
 
 // https://typeorm.biunav.com/zh/select-query-builder.html#%E4%BB%80%E4%B9%88%E6%98%AFquerybuilder
 
@@ -38,27 +39,32 @@ export class UserService {
     @Inject(ConfigService) private readonly configService: ConfigService,
     @Inject(RedisCacheService)
     private readonly redisCacheService: RedisCacheService,
+    @InjectEntityManager() private entityManager: EntityManager,
   ) {}
 
-  public async createUser(user: CreateUserDto) {
+  public async createUser(userDto: CreateUserDto) {
     try {
+      const user = {
+        ...getFormatData('create'),
+        password: userDto.password || '123456',
+        name: userDto.name,
+        desc: userDto.desc,
+        email: userDto.email,
+        nick: userDto.nick,
+        address: userDto.address,
+        phone: userDto.phone,
+        age: userDto.age,
+        status: userDto.status || UserStatusEnum.Active,
+        organization: userDto.organization,
+        isSuper: userDto.isSuper || false,
+      };
       const res = await this.userRepository
         .createQueryBuilder('u')
         .insert()
         .into(User)
         .values([
           // 数组形式可以同时添加多个，也可以用object只添加单个
-          {
-            ...getFormatData('create'),
-            password: user.password,
-            name: user.name,
-            desc: user.desc,
-            email: user.email,
-            nick: user.nick,
-            address: user.address,
-            phone: user.phone,
-            age: user.age,
-          },
+          user,
         ])
         .execute();
 
@@ -67,6 +73,32 @@ export class UserService {
       console.log('shibei', e);
       throw new HttpException('注册失败', 200);
     }
+  }
+
+  /** 更新用户信息 */
+  public async updateUserInfo(userDto: UpdateUserDto) {
+    return await this.entityManager.transaction(async (manager) => {
+      try {
+        return await manager.update(User, userDto.id, {
+          name: userDto.name,
+          desc: userDto.desc,
+          email: userDto.email,
+          nick: userDto.nick,
+          address: userDto.address,
+          phone: userDto.phone,
+          age: userDto.age,
+          status: userDto.status || UserStatusEnum.Active,
+          organization: userDto.organization,
+          isSuper: userDto.isSuper || false,
+        });
+      } catch (error) {
+        throw new ApiException(
+          '更新用户失败' + error,
+          200,
+          ApiCodeEnum.PUBLIC_ERROR,
+        );
+      }
+    });
   }
 
   // 查找指定用户
@@ -125,7 +157,7 @@ export class UserService {
         // .leftJoinAndSelect('u.managers', 'm', 'm.isDelete = :isDelete', {
         //   isDelete: 0,
         // })
-        .select(['u', 'org', 'org.code', 'm', 'm.code'])
+        // .select(['u', 'org', 'org.code', 'm', 'm.code'])
         .where(queryCondition, {
           name,
           isDelete: 0,
@@ -155,7 +187,7 @@ export class UserService {
           id,
           isDelete: 0,
         })
-        .select(['u', 'org', 'org.code', 'm', 'm.code'])
+        // .select(['u', 'org', 'org.code', 'm', 'm.code'])
         .getOne();
 
       return res;
@@ -182,12 +214,15 @@ export class UserService {
   }
 
   /** 用户列表 */
-  public async getUserList(query: any) {
+  public async getUserList(params: QueryUserListDto) {
     try {
-      const { name, pageSize = 10, current = 1 } = query;
+      const { name, organization, pageSize = 10, current = 1 } = params;
       const queryConditionList = ['o.isDelete = :isDelete'];
       if (name) {
         queryConditionList.push('o.name LIKE :name');
+      }
+      if (organization) {
+        queryConditionList.push('o.organization = :organization');
       }
       const queryCondition = queryConditionList.join(' AND ');
       const res = await this.userRepository
@@ -195,12 +230,25 @@ export class UserService {
         .where(queryCondition, {
           name: `%${name}%`,
           isDelete: 0,
+          organization,
         })
+        .leftJoinAndMapOne(
+          'o.orgName',
+          Organization,
+          'org',
+          'o.organization = org.id',
+        )
         .orderBy('o.name', 'ASC')
         .skip((current - 1) * pageSize)
         .take(pageSize)
         .getManyAndCount();
-      return { list: res[0], total: res[1], pageSize, current };
+      const [list, total] = res as any;
+
+      const formatList = list.map((item) => ({
+        ...item,
+        orgName: item.orgName?.name,
+      }));
+      return { list: formatList, total, pageSize, current };
     } catch (e) {
       console.log({ e });
       throw new ApiException('查询用户列表失败', 400, ApiCodeEnum.PUBLIC_ERROR);
@@ -229,6 +277,18 @@ export class UserService {
       return { list: res[0], count: res[1] };
     } catch (e) {
       throw new ApiException('查询用户列表失败', 400, ApiCodeEnum.PUBLIC_ERROR);
+    }
+  }
+
+  public async deleteUsers(userIds: number[]) {
+    try {
+      return await this.userRepository
+        .createQueryBuilder()
+        .delete()
+        .whereInIds(userIds)
+        .execute();
+    } catch (e) {
+      throw new ApiException('删除用户失败', 200, ApiCodeEnum.PUBLIC_ERROR);
     }
   }
 

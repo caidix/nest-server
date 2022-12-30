@@ -1,3 +1,4 @@
+import { Organization } from '@libs/db/entity/OrganizationEntity';
 import { User } from '@libs/db/entity/UserEntity';
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -8,7 +9,7 @@ import { UserService } from './user.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Organization]),
     forwardRef(() => AuthModule), // 循环依赖， 引入auth
   ],
   controllers: [UserController],

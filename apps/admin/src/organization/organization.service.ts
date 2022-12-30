@@ -6,8 +6,11 @@ import * as dayjs from 'dayjs';
 import { ApiException } from 'libs/common/exception/ApiException';
 import { getFormatData } from 'libs/common/utils';
 import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
-import { Brackets, In, NotBrackets, Repository } from 'typeorm';
-import { CreateOrganizationDto } from './dto/OrganizationDto';
+import { Brackets, In, NotBrackets, Repository, UpdateResult } from 'typeorm';
+import {
+  CreateOrganizationDto,
+  UpdateOrganizationDto,
+} from './dto/OrganizationDto';
 
 @Injectable()
 export class OrganizationService {
@@ -43,8 +46,7 @@ export class OrganizationService {
     try {
       return await this.organizationRepository
         .createQueryBuilder()
-        .update(Organization)
-        .set({ ...getFormatData('delete', user) })
+        .delete()
         .whereInIds(ids)
         .execute();
     } catch (e) {
@@ -54,9 +56,13 @@ export class OrganizationService {
 
   /** 获取所有组织 */
   async getOrganizationList() {
-    return await this.organizationRepository.find({
-      order: { sort: 'DESC', createTime: 'DESC' },
-    });
+    try {
+      return await this.organizationRepository.find({
+        order: { sort: 'DESC', createTime: 'DESC' },
+      });
+    } catch (e) {
+      throw new ApiException('获取所有组织失败', 200, ApiCodeEnum.PUBLIC_ERROR);
+    }
   }
 
   /** 根据当前角色id获取部门列表 */
@@ -87,18 +93,18 @@ export class OrganizationService {
     }
   }
 
-  /** 查找当前部门下的子部门数量* /
+  /** 查找当前部门下的子部门数量*/
   public async countChildOrganization(id: number): Promise<number> {
     return await this.organizationRepository.count({ where: { parentId: id } });
   }
 
   /** 更新单个组织 */
-  public async updateOrganization(organization: any) {
+  public async updateOrganization(organization: UpdateOrganizationDto, user) {
     try {
       return await this.organizationRepository
         .createQueryBuilder()
         .update(Organization)
-        .set({ ...organization, ...getFormatData('update') })
+        .set({ ...organization, ...getFormatData('update', user) })
         .where('id=:id', { id: organization.id })
         .execute();
     } catch (error) {
@@ -130,11 +136,14 @@ export class OrganizationService {
   /**
    * 转移组织
    */
-  async transfer(userIds: number[], organizationId: number): Promise<void> {
+  async transfer(
+    userIds: number[],
+    organization: number,
+  ): Promise<UpdateResult> {
     try {
-      await this.userRepository.update(
+      return await this.userRepository.update(
         { id: In(userIds) },
-        { organization: organizationId },
+        { organization },
       );
     } catch (error) {
       throw new ApiException('转移组织失败', 200, ApiCodeEnum.PUBLIC_ERROR);

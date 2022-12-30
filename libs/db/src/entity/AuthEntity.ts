@@ -48,7 +48,7 @@ export class Authority extends CommonEntity {
   isDelete: number;
 
   @Column({ default: '', nullable: true })
-  crateTime: string;
+  createTime: string;
 
   @Column({ default: '', nullable: true })
   updateTime: string;

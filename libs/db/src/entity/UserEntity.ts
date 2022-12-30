@@ -6,6 +6,12 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Organization } from './OrganizationEntity';
+
+export enum UserStatusEnum {
+  Active = 1,
+  Disable = 2,
+}
+
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -24,7 +30,7 @@ export class User {
   })
   password: string;
 
-  @Column({ select: false, comment: '邮箱', length: 500 })
+  @Column({ select: true, comment: '邮箱', length: 500 })
   email: string;
 
   @Column({ default: '', comment: '手机号' })
@@ -42,11 +48,12 @@ export class User {
   @Column({ nullable: true, comment: '昵称' })
   nick: string;
 
-  /**
-   * 状态： 启用 、 禁用
-   */
-  @Column({ default: 0, comment: '状态' })
-  status: number;
+  @Column('enum', {
+    comment: '状态 1：启用  2：禁用',
+    enum: UserStatusEnum,
+    default: UserStatusEnum.Active,
+  })
+  status: UserStatusEnum;
 
   // 所属组织
   // @ManyToMany(() => Organization, (organization) => organization.users)
@@ -67,7 +74,7 @@ export class User {
   verification: boolean;
 
   @Column({ default: '', nullable: true })
-  crateTime: string;
+  createTime: string;
 
   @Column({ default: '', nullable: true })
   updateTime: string;

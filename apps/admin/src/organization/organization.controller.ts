@@ -13,9 +13,12 @@ import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
 import { OrganizationService } from './organization.service';
 import { AuthGuard } from '@nestjs/passport';
 import {
+  CreateOrganizationDto,
   GetOrganizationListDto,
   GetUnOrganizationListDto,
   RelationOrganizationDto,
+  TransferOrganizationDto,
+  UpdateOrganizationDto,
 } from './dto/OrganizationDto';
 import { CurrentUser } from 'libs/common/decorator/current-user.decorator';
 
@@ -34,7 +37,7 @@ export class OrganizationController {
     summary: '创建组织',
   })
   public async createOrganization(
-    @Body() createOrganizationDto: any,
+    @Body() createOrganizationDto: CreateOrganizationDto,
     @CurrentUser() user,
   ) {
     const data = await this.organizationService.createOrganization(
@@ -67,7 +70,7 @@ export class OrganizationController {
     return returnClient('组织删除成功', ApiCodeEnum.SUCCESS);
   }
 
-  @Get('list')
+  @Get('all-list')
   @ApiOperation({
     summary: '获取组织列表',
   })
@@ -80,8 +83,11 @@ export class OrganizationController {
   @ApiOperation({
     summary: '更新组织',
   })
-  public async updateOrganization(@Body() systemDto: any) {
-    await this.organizationService.updateOrganization(systemDto);
+  public async updateOrganization(
+    @Body() organizationDto: UpdateOrganizationDto,
+    @CurrentUser() user,
+  ) {
+    await this.organizationService.updateOrganization(organizationDto, user);
     return returnClient('更新应用成功', ApiCodeEnum.SUCCESS);
   }
 
@@ -97,11 +103,12 @@ export class OrganizationController {
   @ApiOperation({
     summary: '用户转移组织',
   })
-  async transfer(@Body() transferDeptDto: any): Promise<void> {
+  async transfer(@Body() transferDto: TransferOrganizationDto) {
     await this.organizationService.transfer(
-      transferDeptDto.userIds,
-      transferDeptDto.departmentId,
+      transferDto.userIds,
+      transferDto.organization,
     );
+    return returnClient('用户转移组织成功', ApiCodeEnum.SUCCESS);
   }
 
   // @Post('delete-organizations')
