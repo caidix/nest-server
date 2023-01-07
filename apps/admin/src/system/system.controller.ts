@@ -83,7 +83,6 @@ export class SystemController {
       }
 
       // 判断组织是否存在
-      const organizationCode = createSystemDto.organization;
       // const hasOrganization =
       //   await this.organizationService.getOrganizationByMyself({
       //     code: organizationCode,

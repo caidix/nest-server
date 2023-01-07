@@ -36,8 +36,4 @@ export class System extends CommonEntity {
 
   @Column({ default: '', comment: '应用编码' })
   code: string;
-
-  // 所属用户组
-  @Column({ nullable: false, comment: '所属用户组' })
-  organization: string;
 }

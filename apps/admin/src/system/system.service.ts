@@ -109,26 +109,25 @@ export class SystemService {
   /** 获取应用列表 */
   public async getSystemList(query: QuerySystemListDto, user) {
     try {
-      const { search, organization, pageSize = 10, current = 1 } = query;
+      const { search, pageSize = 10, current = 1 } = query;
       const queryConditionList = ['s.isDelete = :isDelete'];
-      if (organization) {
-        queryConditionList.push('s.organization=:organization');
-      }
+      // if (organization) {
+      //   queryConditionList.push('s.organization=:organization');
+      // }
       if (search) {
         queryConditionList.push('s.name LIKE :name OR s.code = :code');
       }
       /** 用户没有列表权限 */
-      if (user) {
-        if (!user.roles || !user.roles.length) {
-          return { list: [], total: 0, pageSize, current };
-        }
-        queryConditionList.push('s.organization in (:...roles)');
-      }
+      // if (user) {
+      //   if (!user.roles || !user.roles.length) {
+      //     return { list: [], total: 0, pageSize, current };
+      //   }
+      //   queryConditionList.push('s.organization in (:...roles)');
+      // }
       const res = await this.systemRepository
         .createQueryBuilder('s')
         .where(queryConditionList.join(' AND '), {
           name: `%${search}%`,
-          organization,
           isDelete: 0,
           code: search,
           roles: user.roles,
@@ -153,15 +152,14 @@ export class SystemService {
   public async getAllSystemList(user) {
     try {
       /** 用户没有列表权限 */
-      if (user) {
-        if (!user.roles || !user.roles.length) {
-          return { list: [] };
-        }
-      }
+      // if (user) {
+      //   if (!user.roles || !user.roles.length) {
+      //     return { list: [] };
+      //   }
+      // }
       const res = await this.systemRepository
         .createQueryBuilder('s')
-        .where('s.isDelete = :isDelete AND s.organization in (:...roles)', {
-          roles: user.roles,
+        .where('s.isDelete = :isDelete', {
           isDelete: 0,
         })
         .getMany();

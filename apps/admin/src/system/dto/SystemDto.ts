@@ -19,8 +19,6 @@ export class QuerySystemListDto {
   @ApiProperty({ title: '应用名称或编码', example: '用户信息管理' })
   @IsString({ message: '系统值不正确', context: { errorCode: 1 } })
   search?: string;
-  @ApiProperty({ title: '组织归属' })
-  organization?: number;
   @ApiProperty({ title: '分页尺寸', example: 10 })
   pageSize?: number;
   @ApiProperty({ title: '当前页', example: 1 })
@@ -31,9 +29,6 @@ export class CreateSystemDto {
   @ApiProperty({ title: '应用名', example: '用户信息管理' })
   @IsString({ message: '应用名有误', context: { errorCode: 1 } })
   name: string;
-
-  @ApiProperty({ title: '组织归属' })
-  organization?: number;
 
   @ApiProperty({ title: '应用编码', example: '' })
   code: string;
