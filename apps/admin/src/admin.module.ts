@@ -23,7 +23,7 @@ import { RoleModule } from './role/role.module';
     SystemMenuModule,
     // AuthMenuModule,
     // ApiResourceModule,
-    // RoleModule,
+    RoleModule,
   ],
   controllers: [
     AdminController,

@@ -4,9 +4,12 @@ import { AuthMenu } from './entity/AuthMenuEntity';
 import { System } from './entity/SystemEntity';
 import { SystemMenu } from './entity/SystemMenuEntity';
 import { ApiResource } from './entity/ApiResourceEntity';
-import { Role } from './entity/RoleEntity';
 
-import { Module } from '@nestjs/common';
+/** 角色表集合 */
+import { Role } from './entity/RoleEntity';
+import { RoleGroup } from './entity/RoleGroupEntity';
+
+import { FactoryProvider, Module } from '@nestjs/common';
 import { DbService } from './db.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -14,6 +17,7 @@ import { RedisModule } from '@liaoliaots/nestjs-redis';
 
 const models = TypeOrmModule.forFeature([
   User,
+  RoleGroup,
   // Organization,
   // AuthMenu,
   // System,
@@ -21,6 +25,7 @@ const models = TypeOrmModule.forFeature([
   // ApiResource,
   // Role,
 ]);
+
 
 @Module({
   imports: [
@@ -60,4 +65,4 @@ const models = TypeOrmModule.forFeature([
   providers: [DbService],
   exports: [DbService],
 })
-export class DbModule {}
+export class DbModule { }
