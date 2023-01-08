@@ -26,7 +26,6 @@ const models = TypeOrmModule.forFeature([
   // Role,
 ]);
 
-
 @Module({
   imports: [
     // 接入redis， 得安装才跑得起来噢！
@@ -65,4 +64,4 @@ const models = TypeOrmModule.forFeature([
   providers: [DbService],
   exports: [DbService],
 })
-export class DbModule { }
+export class DbModule {}

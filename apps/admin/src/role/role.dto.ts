@@ -10,7 +10,6 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { PageDto } from 'libs/common/types/PageDto';
 
-
 export class CreateRoleGroupDto {
   @ApiProperty({ title: '角色分组名称', example: 'asd' })
   name: string;
@@ -27,4 +26,31 @@ export class UpdateRoleGroupDto extends CreateRoleGroupDto {
 export class DeleteRoleGroupDto {
   @ApiProperty({ title: '角色分组id', example: 1 })
   id: number;
+}
+
+export class CreateRoleDto {
+  @ApiProperty({ title: '角色名称', example: 'asd' })
+  name: string;
+
+  @ApiProperty({ title: '描述', example: 'asd' })
+  desc?: string;
+
+  @ApiProperty({ title: '分组ID', example: 1 })
+  roleGroupId: number;
+}
+
+export class UpdateRoleDto extends CreateRoleDto {
+  @ApiProperty({ title: '角色id', example: 1 })
+  id: number;
+}
+
+export class SearchRoleDto extends PageDto {
+  @ApiProperty({ title: '角色名称', example: 'asd' })
+  name?: string;
+
+  @ApiProperty({ title: '描述', example: 'asd' })
+  desc?: string;
+
+  @ApiProperty({ title: '分组ID', example: 1 })
+  roleGroupId?: number;
 }

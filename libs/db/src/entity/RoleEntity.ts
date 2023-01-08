@@ -21,10 +21,6 @@ export class Role extends CommonEntity {
   @Column('text', { nullable: true, comment: '描述' })
   desc: string;
 
-  @Column({ default: '', comment: '角色编码' })
-  code: string;
-
-  
-  @Column({  comment: '所属分组ID' })
+  @Column({ comment: '所属分组ID' })
   roleGroupId: number;
 }

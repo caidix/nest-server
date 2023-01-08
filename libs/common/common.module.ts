@@ -10,8 +10,6 @@ import { rootRoleIdProvider } from './factory/root-role-id.provider';
 // 需要注意的是，同时加载的模块可能先一步加载就会拿不到环境变量或者想要的参数
 // 通常编写的插件里有同步forRoot方法和异步forRootAsync方法，我们就需要给其他的插件采用异步形式导入
 
-
-
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: [envConfig.path] }),
@@ -29,6 +27,6 @@ import { rootRoleIdProvider } from './factory/root-role-id.provider';
     }),
   ],
   providers: [rootRoleIdProvider],
-  exports:[rootRoleIdProvider]
+  exports: [rootRoleIdProvider],
 })
 export class CommonModule {}
