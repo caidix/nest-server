@@ -88,10 +88,12 @@ export class RoleController {
     if (!hasRoleGroup) {
       return returnClient('该角色分组不存在', ApiCodeEnum.PUBLIC_ERROR);
     }
-    const hasRole = this.roleService.getRoleDetail({
+    const hasRole = await this.roleService.getRoleDetail({
       name: createRoleDto.name,
       roleGroupId: createRoleDto.roleGroupId,
     });
+    console.log({ hasRole });
+
     if (!!hasRole) {
       return returnClient('相同分组下角色名称重复', ApiCodeEnum.PUBLIC_ERROR);
     }
@@ -115,9 +117,22 @@ export class RoleController {
   @ApiOperation({
     summary: '获取角色列表',
   })
-  public async getSystemList(@Query() params: SearchRoleDto) {
+  public async getRoleList(@Query() params: SearchRoleDto) {
     try {
       const data = await this.roleService.roleList(params);
+      return returnClient('获取成功', ApiCodeEnum.SUCCESS, data);
+    } catch (error) {
+      return returnClient(error.errorMessage, error.code);
+    }
+  }
+
+  @Get('all-list')
+  @ApiOperation({
+    summary: '获取所有角色列表',
+  })
+  public async getAllRoleList(@Query() params: SearchRoleDto) {
+    try {
+      const data = await this.roleService.getAllRoles(params);
       return returnClient('获取成功', ApiCodeEnum.SUCCESS, data);
     } catch (error) {
       return returnClient(error.errorMessage, error.code);

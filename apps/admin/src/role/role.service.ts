@@ -210,6 +210,36 @@ export class RoleService {
     }
   }
 
+  public async getAllRoles(params: Partial<SearchRoleDto>) {
+    try {
+      const { name = '', roleGroupId } = params;
+      const queryConditionList = ['r.id <> :id'];
+      if (name) {
+        queryConditionList.push('r.name LIKE :name');
+      }
+      if (roleGroupId) {
+        queryConditionList.push('r.roleGroupId = :roleGroupId');
+      }
+      const res = await this.roleRepository
+        .createQueryBuilder('r')
+        .where(queryConditionList.join(' AND '), {
+          id: this.roleRootId,
+          name: `%${name}%`,
+          roleGroupId: roleGroupId,
+        })
+        .leftJoinAndMapOne('r.group', RoleGroup, 'rg', 'r.roleGroupId = rg.id')
+        .getManyAndCount();
+
+      return { list: res[0], total: res[1] };
+    } catch (error) {
+      throw new ApiException(
+        '获取所有角色列表失败',
+        200,
+        ApiCodeEnum.PUBLIC_ERROR,
+      );
+    }
+  }
+
   public async hasRoleGroup(id: number) {
     try {
       const res = await this.roleGroupRepository.findOne({ id });
@@ -236,18 +266,18 @@ export class RoleService {
       if (roleGroupId) {
         queryConditionList.push('r.roleGroupId = :roleGroupId');
       }
-      const res = await this.roleGroupRepository
+      const res = await this.roleRepository
         .createQueryBuilder('r')
-        .where(queryConditionList.join('AND'), {
+        .where(queryConditionList.join(' AND '), {
           name,
           id,
           roleGroupId,
         })
         .getOne();
-      return !!res;
+      return res;
     } catch (error) {
       throw new ApiException(
-        'hasRoleGroup - error:' + error,
+        'getRoleDetail - error',
         200,
         ApiCodeEnum.PUBLIC_ERROR,
       );
