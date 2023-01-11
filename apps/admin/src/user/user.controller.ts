@@ -87,6 +87,10 @@ export class UserController {
     }
     await this.userService.createUser(createUserDto);
     const res = await this.userService.findSpecifiedUser(createUserDto.name);
+    if (res) {
+      const roles = createUserDto.roles || [];
+      await this.userService.updateUserRoles(res.id, roles);
+    }
     return returnClient('注册成功', ApiCodeEnum.SUCCESS, { data: res });
   }
 
@@ -103,7 +107,12 @@ export class UserController {
       return returnClient('暂无操作权限', ApiCodeEnum.NO_AUTH);
     }
     await this.userService.updateUserInfo(updateUserDto);
-    // const res =
+    if (updateUserDto.roles) {
+      await this.userService.updateUserRoles(
+        updateUserDto.id,
+        updateUserDto.roles,
+      );
+    }
     return returnClient('更新成功', ApiCodeEnum.SUCCESS);
   }
 

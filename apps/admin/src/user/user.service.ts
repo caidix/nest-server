@@ -23,6 +23,8 @@ import {
   setEmailContent,
 } from 'libs/common/utils';
 import { Organization } from '@libs/db/entity/OrganizationEntity';
+import { UserRole } from '@libs/db/entity/UserRoleEntity';
+import { Role } from '@libs/db/entity/RoleEntity';
 
 // https://typeorm.biunav.com/zh/select-query-builder.html#%E4%BB%80%E4%B9%88%E6%98%AFquerybuilder
 
@@ -67,12 +69,33 @@ export class UserService {
           user,
         ])
         .execute();
-
       return res;
     } catch (e) {
       console.log('shibei', e);
       throw new HttpException('注册失败', 200);
     }
+  }
+
+  public async updateUserRoles(userId: number, roleIds: number[]) {
+    return await this.entityManager.transaction(async (manager) => {
+      try {
+        await manager.delete(UserRole, { userId });
+        const insertRoles = roleIds.map((e) => {
+          return {
+            roleId: e,
+            userId,
+          };
+        });
+        // 重新分配角色
+        await manager.insert(UserRole, insertRoles);
+      } catch (error) {
+        throw new ApiException(
+          '用户角色关系分配失败' + error,
+          200,
+          ApiCodeEnum.PUBLIC_ERROR,
+        );
+      }
+    });
   }
 
   /** 更新用户信息 */
@@ -227,27 +250,47 @@ export class UserService {
       const queryCondition = queryConditionList.join(' AND ');
       const res = await this.userRepository
         .createQueryBuilder('o')
-        .where(queryCondition, {
-          name: `%${name}%`,
-          isDelete: 0,
-          organization,
-        })
         .leftJoinAndMapOne(
           'o.orgName',
           Organization,
           'org',
           'o.organization = org.id',
         )
+        .innerJoinAndMapMany(
+          'o.userRole',
+          UserRole,
+          'userRole',
+          'userRole.userId = o.id',
+        )
+        .innerJoinAndMapMany(
+          'o.roleNames',
+          Role,
+          'roleNames',
+          'roleNames.id = userRole.roleId',
+        )
+        .where(queryCondition, {
+          name: `%${name}%`,
+          isDelete: 0,
+          organization,
+        })
         .orderBy('o.name', 'ASC')
         .skip((current - 1) * pageSize)
         .take(pageSize)
         .getManyAndCount();
       const [list, total] = res as any;
-
-      const formatList = list.map((item) => ({
-        ...item,
-        orgName: item.orgName?.name,
-      }));
+      const formatList = list.map((item) => {
+        const orgName = item.orgName?.name;
+        const rolesName = (item.roleNames || []).map((i) => i.name).join(',');
+        const roles = (item.userRole || []).map((item) => item.roleId);
+        delete item.roleNames;
+        delete item.userRole;
+        return {
+          ...item,
+          roles,
+          rolesName,
+          orgName,
+        };
+      });
       return { list: formatList, total, pageSize, current };
     } catch (e) {
       console.log({ e });
@@ -271,8 +314,6 @@ export class UserService {
         .orderBy('u.name', 'ASC')
         .select(['u.name', 'u.id'])
         .getManyAndCount();
-
-      console.log({ res });
 
       return { list: res[0], count: res[1] };
     } catch (e) {

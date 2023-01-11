@@ -8,6 +8,7 @@ import { ApiResource } from './entity/ApiResourceEntity';
 /** 角色表集合 */
 import { Role } from './entity/RoleEntity';
 import { RoleGroup } from './entity/RoleGroupEntity';
+import { UserRole } from './entity/UserRoleEntity';
 
 import { FactoryProvider, Module } from '@nestjs/common';
 import { DbService } from './db.service';
@@ -18,6 +19,7 @@ import { RedisModule } from '@liaoliaots/nestjs-redis';
 const models = TypeOrmModule.forFeature([
   User,
   RoleGroup,
+  UserRole,
   // Organization,
   // AuthMenu,
   // System,

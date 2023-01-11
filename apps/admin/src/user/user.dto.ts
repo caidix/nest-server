@@ -28,6 +28,9 @@ export class CreateUserDto {
   @ApiProperty({ title: '所属组织ID' })
   organization?: number;
 
+  @ApiProperty({ title: '所属角色枚举ID' })
+  roles?: number[];
+
   @ApiProperty({ title: '是否超管' })
   isSuper?: boolean;
 
