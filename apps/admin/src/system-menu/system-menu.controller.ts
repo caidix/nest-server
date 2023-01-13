@@ -42,10 +42,7 @@ export class SystemMenuController {
     @CurrentUser() user: User,
   ) {
     try {
-      const data = await this.systemMenuiService.getSystemMenuList(
-        params.code,
-        user,
-      );
+      const data = await this.systemMenuiService.getSystemMenuList(params.code);
       return returnClient('获取成功', ApiCodeEnum.SUCCESS, data);
     } catch (error) {
       return returnClient(error.errorMessage, error.code);

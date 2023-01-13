@@ -109,7 +109,7 @@ export class SystemMenuService {
   public async deleteSystemMenu(data: HandleMenu, user: User) {
     try {
       const { systemCode, id } = data;
-      const list = await this.getSystemMenuList(systemCode, user);
+      const list = await this.getSystemMenuList(systemCode);
       const item = findTarget<any>(
         list.list,
         (item) => item.id === id,
@@ -164,7 +164,7 @@ export class SystemMenuService {
   }
 
   /** 获取菜单列表 */
-  public async getSystemMenuList(code: string, user: User) {
+  public async getSystemMenuList(code: string) {
     try {
       const res = await this.systemMenuRepository
         .createQueryBuilder('s')

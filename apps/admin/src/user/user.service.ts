@@ -1,6 +1,5 @@
 import * as nodemailer from 'nodemailer';
-import { EntityManager, Repository } from 'typeorm';
-import * as dayjs from 'dayjs';
+import { EntityManager, In, Repository } from 'typeorm';
 import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import fetch from 'node-fetch';
@@ -11,7 +10,6 @@ import { ConfigService } from '@nestjs/config';
 import { RedisCacheService } from '../redis/redis.service';
 
 // Dto
-import { LoginUserDto } from './dto/LoginUserDto';
 import { QueryUserListDto, CreateUserDto, UpdateUserDto } from './user.dto';
 
 // Utils
@@ -38,6 +36,7 @@ type MailerOptions = {
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(UserRole) private readonly userRoleService: Repository<UserRole>,
     @Inject(ConfigService) private readonly configService: ConfigService,
     @Inject(RedisCacheService)
     private readonly redisCacheService: RedisCacheService,
@@ -323,11 +322,12 @@ export class UserService {
 
   public async deleteUsers(userIds: number[]) {
     try {
-      return await this.userRepository
+      await this.userRepository
         .createQueryBuilder()
         .delete()
         .whereInIds(userIds)
         .execute();
+      await this.userRoleService.delete({ userId: In(userIds) });
     } catch (e) {
       throw new ApiException('删除用户失败', 200, ApiCodeEnum.PUBLIC_ERROR);
     }

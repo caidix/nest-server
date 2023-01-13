@@ -15,11 +15,13 @@ import { DbService } from './db.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
+import { RoleAuth } from './entity/RoleAuthEntity';
 
 const models = TypeOrmModule.forFeature([
   User,
   RoleGroup,
   UserRole,
+  RoleAuth,
   // Organization,
   // AuthMenu,
   // System,

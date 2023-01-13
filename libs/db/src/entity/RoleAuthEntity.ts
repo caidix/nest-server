@@ -1,27 +1,30 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
-import { CommonEntity } from './Common';
-import { Organization } from './OrganizationEntity';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-/** 应用 - 角色 - 权限点的对应关系 */
+export enum RoleAuthType {
+  System = 1,
+  Menu = 2,
+}
+
+/** 应用 - 角色 - 权限点的对应关系
+ * type为menu时 存有menuId
+ */
 @Entity()
-export class RoleAuth extends CommonEntity {
+export class RoleAuth {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 80, comment: '角色id', default: '' })
+  @Column({ comment: '角色id' })
   roleId: number;
 
   @Column({ length: 80, comment: '应用code', nullable: true })
   systemCode: string;
 
+  @Column({ comment: '权限、菜单ID -- systemMenuId', nullable: true })
+  menuId: number;
+
   @Column({ comment: '应用id' })
   systemId: number;
+
+  @Column({ comment: '' })
+  type: RoleAuthType;
 }

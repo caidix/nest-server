@@ -22,6 +22,7 @@ import { CurrentUser } from 'libs/common/decorator/current-user.decorator';
 import { User } from '@libs/db/entity/UserEntity';
 import { returnClient } from 'libs/common/return/returnClient';
 import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
+import { SystemMenuService } from '../system-menu/system-menu.service';
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
 @ApiTags('role')
@@ -30,6 +31,9 @@ export class RoleController {
   constructor(
     @Inject(RoleService)
     private readonly roleService: RoleService,
+
+    @Inject(SystemMenuService)
+    private readonly systemMenuService: SystemMenuService,
   ) {}
 
   @Post('group/create')
@@ -137,5 +141,33 @@ export class RoleController {
     } catch (error) {
       return returnClient(error.errorMessage, error.code);
     }
+  }
+
+  @Get('role-auth-system')
+  public async getSystemRoleAuth(@Query() query: any) {
+    const res = await this.roleService.getSystemRoleAuth(query.roleId);
+    return returnClient('获取成功', ApiCodeEnum.SUCCESS, res);
+  }
+
+  @Post('menu-auth-list')
+  @ApiOperation({
+    summary: '获取所有角色列表',
+  })
+  public async getMenuAuthList(@Body() data) {
+    const { code, roleId, systemId } = data;
+    const auths = await this.roleService.getRoleAuthBySystem({
+      roleId,
+      systemId,
+    });
+    if (auths) {
+      // const _auths = auths.map((auth) => {
+      //   const menus = await this.systemMenuService.getSystemMenuList(code);
+      // });
+    }
+
+    return returnClient('获取成功', ApiCodeEnum.SUCCESS, {
+      // menus,
+      auths,
+    });
   }
 }

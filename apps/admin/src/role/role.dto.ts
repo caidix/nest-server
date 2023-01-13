@@ -9,6 +9,7 @@ import {
 // import { ApiErrorCode } from '../../../config/ApiApiCodeEnum';
 import { ApiProperty } from '@nestjs/swagger';
 import { PageDto } from 'libs/common/types/PageDto';
+import { RoleAuthType } from '@libs/db/entity/RoleAuthEntity';
 
 export class CreateRoleGroupDto {
   @ApiProperty({ title: '角色分组名称', example: 'asd' })
@@ -53,4 +54,10 @@ export class SearchRoleDto extends PageDto {
 
   @ApiProperty({ title: '分组ID', example: 1 })
   roleGroupId?: number;
+}
+
+export class SearchRoleAuthDto {
+  roleId?: number;
+  systemId?: number;
+  type?: RoleAuthType;
 }

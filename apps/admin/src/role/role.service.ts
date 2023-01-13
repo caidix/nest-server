@@ -1,12 +1,13 @@
 import { Role } from '@libs/db/entity/RoleEntity';
 import { RoleGroup } from '@libs/db/entity/RoleGroupEntity';
 import { Inject, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Not, Repository } from 'typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { EntityManager, Like, Not, Repository } from 'typeorm';
 import {
   CreateRoleDto,
   CreateRoleGroupDto,
   DeleteRoleGroupDto,
+  SearchRoleAuthDto,
   SearchRoleDto,
   UpdateRoleDto,
   UpdateRoleGroupDto,
@@ -15,6 +16,9 @@ import { getFormatData } from 'libs/common/utils';
 import { User } from '@libs/db/entity/UserEntity';
 import { ApiException } from 'libs/common/exception/ApiException';
 import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
+import { RoleAuth, RoleAuthType } from '@libs/db/entity/RoleAuthEntity';
+import { System } from '@libs/db/entity/SystemEntity';
+import { difference, filter, includes, isEmpty, map } from 'lodash';
 
 @Injectable()
 export class RoleService {
@@ -23,6 +27,9 @@ export class RoleService {
     private readonly roleGroupRepository: Repository<RoleGroup>,
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
+    @InjectRepository(RoleAuth)
+    private readonly roleAuthRepository: Repository<RoleAuth>,
+    @InjectEntityManager() private entityManager: EntityManager,
     @Inject('ROOT_ROLE_ID') private roleRootId: number,
   ) {}
 
@@ -278,6 +285,92 @@ export class RoleService {
     } catch (error) {
       throw new ApiException(
         'getRoleDetail - error',
+        200,
+        ApiCodeEnum.PUBLIC_ERROR,
+      );
+    }
+  }
+
+  /** 权限分配 */
+  /** 获取该角色授权了的应用 */
+  public async getSystemRoleAuth(roleId, type = RoleAuthType.System) {
+    try {
+      const res = await this.roleAuthRepository.find({ roleId, type });
+      return res;
+    } catch (error) {}
+  }
+
+  public async getRoleAuthBySystem(dto: SearchRoleAuthDto) {
+    try {
+      const { roleId, systemId, type = RoleAuthType.System } = dto;
+      const res = await this.roleAuthRepository
+        .createQueryBuilder('ra')
+        .where(
+          'ra.roleId = :roleId AND ra.systemId = :systemId AND ra.type = :type',
+          {
+            roleId,
+            systemId,
+            type,
+          },
+        )
+        .innerJoinAndMapOne('ra.system', System, 'sys', 'sys.id = ra.systemId')
+        .getMany();
+      return res;
+    } catch (error) {}
+  }
+
+  /** 增加角色 - 应用 权限 */
+  public async updateRoleAuthBySystem(dto: any) {
+    try {
+      const {
+        roleId,
+        systemId,
+        systemIds = [],
+        type = RoleAuthType.System,
+      } = dto;
+      const roleRows = await this.roleAuthRepository.find({
+        roleId,
+        systemId,
+        type,
+      });
+      const originSystemIds = roleRows.map((e) => e.systemId);
+      const insertSystemRowIds = difference(systemIds, originSystemIds);
+      const deleteSystemRowIds = difference(originSystemIds, systemIds);
+      await this.entityManager.transaction(async (manager) => {
+        // 菜单
+        if (insertSystemRowIds.length > 0) {
+          // 有条目更新
+          const insertRows = insertSystemRowIds.map((e) => {
+            return {
+              roleId,
+              systemId: e,
+              type,
+            };
+          });
+          await manager.insert(RoleAuth, insertRows);
+        }
+        if (deleteSystemRowIds.length > 0) {
+          // 有条目需要删除
+          const realDeleteRowIds = filter(roleRows, (e) => {
+            return includes(deleteSystemRowIds, e.systemId);
+          }).map((e) => {
+            return e.id;
+          });
+          await manager.delete(RoleAuth, realDeleteRowIds);
+        }
+      });
+      // const insertRoles = systemIds.map((e) => {
+      //   return {
+      //     roleId,
+      //     systemId: e,
+      //     type,
+      //   };
+      // });
+      // // 重新分配角色
+      // await manager.insert(UserRole, insertRoles);
+    } catch (error) {
+      throw new ApiException(
+        '用户角色关系分配失败' + error,
         200,
         ApiCodeEnum.PUBLIC_ERROR,
       );
