@@ -61,3 +61,11 @@ export class SearchRoleAuthDto {
   systemId?: number;
   type?: RoleAuthType;
 }
+
+export class SearchSystemRoleAuthDto {
+  @ApiProperty({ title: '角色id', example: 12 })
+  roleId: number;
+
+  @ApiProperty({ title: '', example: RoleAuthType.Menu })
+  type?: RoleAuthType;
+}

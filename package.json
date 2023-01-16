@@ -38,6 +38,7 @@
     "dayjs": "^1.11.0",
     "dotenv": "^10.0.0",
     "ioredis": "^5.2.2",
+    "lodash": "^4.17.21",
     "mysql2": "^2.3.3",
     "nest-winston": "^1.6.2",
     "node-fetch": "2",

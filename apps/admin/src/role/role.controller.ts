@@ -15,6 +15,7 @@ import {
   CreateRoleGroupDto,
   DeleteRoleGroupDto,
   SearchRoleDto,
+  SearchSystemRoleAuthDto,
   UpdateRoleDto,
   UpdateRoleGroupDto,
 } from './role.dto';
@@ -144,7 +145,7 @@ export class RoleController {
   }
 
   @Get('role-auth-system')
-  public async getSystemRoleAuth(@Query() query: any) {
+  public async getSystemRoleAuth(@Query() query: SearchSystemRoleAuthDto) {
     const res = await this.roleService.getSystemRoleAuth(query.roleId);
     return returnClient('获取成功', ApiCodeEnum.SUCCESS, res);
   }
@@ -169,5 +170,14 @@ export class RoleController {
       // menus,
       auths,
     });
+  }
+
+  @Post('update-auth-system')
+  @ApiOperation({
+    summary: '为角色绑定应用权限',
+  })
+  public async updateRoleAuthBySystem(@Body() data) {
+    await this.roleService.updateRoleAuthBySystem(data);
+    return returnClient('配置成功', ApiCodeEnum.SUCCESS);
   }
 }

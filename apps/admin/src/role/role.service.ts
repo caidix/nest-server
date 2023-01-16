@@ -295,11 +295,29 @@ export class RoleService {
   /** 获取该角色授权了的应用 */
   public async getSystemRoleAuth(roleId, type = RoleAuthType.System) {
     try {
-      const res = await this.roleAuthRepository.find({ roleId, type });
-      return res;
+      const res = await this.roleAuthRepository
+        .createQueryBuilder('ra')
+        .where('ra.roleId = :roleId AND  ra.type = :type', {
+          roleId,
+          type,
+        })
+        .innerJoinAndMapOne('ra.system', System, 'sys', 'sys.id = ra.systemId')
+        .getMany();
+      return res.map((ra: RoleAuth & { system?: System }) => {
+        const systemName = ra?.system.name || '';
+        delete ra.system;
+        return {
+          ...ra,
+          systemName,
+        };
+      });
     } catch (error) {}
   }
 
+  /**
+   * 获取角色授权的应用 -- 及应用详情信息
+   * @param {SearchRoleAuthDto} dto
+   */
   public async getRoleAuthBySystem(dto: SearchRoleAuthDto) {
     try {
       const { roleId, systemId, type = RoleAuthType.System } = dto;
@@ -319,18 +337,15 @@ export class RoleService {
     } catch (error) {}
   }
 
-  /** 增加角色 - 应用 权限 */
+  /**
+   * 变更/添加 角色授权的应用
+   * @param dto
+   */
   public async updateRoleAuthBySystem(dto: any) {
     try {
-      const {
-        roleId,
-        systemId,
-        systemIds = [],
-        type = RoleAuthType.System,
-      } = dto;
+      const { roleId, systemIds = [], type = RoleAuthType.System } = dto;
       const roleRows = await this.roleAuthRepository.find({
         roleId,
-        systemId,
         type,
       });
       const originSystemIds = roleRows.map((e) => e.systemId);

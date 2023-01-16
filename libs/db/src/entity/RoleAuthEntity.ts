@@ -1,5 +1,10 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
+/**
+ * 用户权限对应的关系
+ * @param {number} System 用户拥有的系统权限
+ * @param {number} Menu 用户拥有的系统里的菜单或是权限点的权限
+ */
 export enum RoleAuthType {
   System = 1,
   Menu = 2,

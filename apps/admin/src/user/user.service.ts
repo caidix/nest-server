@@ -36,7 +36,8 @@ type MailerOptions = {
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-    @InjectRepository(UserRole) private readonly userRoleService: Repository<UserRole>,
+    @InjectRepository(UserRole)
+    private readonly userRoleService: Repository<UserRole>,
     @Inject(ConfigService) private readonly configService: ConfigService,
     @Inject(RedisCacheService)
     private readonly redisCacheService: RedisCacheService,
