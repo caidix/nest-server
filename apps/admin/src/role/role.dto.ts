@@ -69,3 +69,28 @@ export class SearchSystemRoleAuthDto {
   @ApiProperty({ title: '', example: RoleAuthType.Menu })
   type?: RoleAuthType;
 }
+
+export class RoleAuthBySystemDto {
+  @ApiProperty({ title: '角色id' })
+  roleId: number;
+
+  @ApiProperty({ title: '系统id' })
+  systemIds: number[];
+
+  @ApiProperty({ title: '', example: RoleAuthType.System })
+  type?: RoleAuthType;
+}
+
+export class RoleAuthByMenusDto {
+  @ApiProperty({ title: '角色id' })
+  roleId: number;
+
+  @ApiProperty({ title: '系统id' })
+  systemId: number;
+
+  @ApiProperty({ title: '系统id' })
+  menuIds: number[];
+
+  @ApiProperty({ title: '', example: RoleAuthType.Menu })
+  type?: RoleAuthType;
+}

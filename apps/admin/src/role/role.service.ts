@@ -7,6 +7,8 @@ import {
   CreateRoleDto,
   CreateRoleGroupDto,
   DeleteRoleGroupDto,
+  RoleAuthByMenusDto,
+  RoleAuthBySystemDto,
   SearchRoleAuthDto,
   SearchRoleDto,
   UpdateRoleDto,
@@ -305,9 +307,11 @@ export class RoleService {
         .getMany();
       return res.map((ra: RoleAuth & { system?: System }) => {
         const systemName = ra?.system.name || '';
+        const systemCode = ra?.system.code;
         delete ra.system;
         return {
           ...ra,
+          systemCode,
           systemName,
         };
       });
@@ -315,12 +319,12 @@ export class RoleService {
   }
 
   /**
-   * 获取角色授权的应用 -- 及应用详情信息
+   * 获取应用下所授权的菜单|功能点权限
    * @param {SearchRoleAuthDto} dto
    */
   public async getRoleAuthBySystem(dto: SearchRoleAuthDto) {
     try {
-      const { roleId, systemId, type = RoleAuthType.System } = dto;
+      const { roleId, systemId, type = RoleAuthType.Menu } = dto;
       const res = await this.roleAuthRepository
         .createQueryBuilder('ra')
         .where(
@@ -331,7 +335,6 @@ export class RoleService {
             type,
           },
         )
-        .innerJoinAndMapOne('ra.system', System, 'sys', 'sys.id = ra.systemId')
         .getMany();
       return res;
     } catch (error) {}
@@ -339,9 +342,9 @@ export class RoleService {
 
   /**
    * 变更/添加 角色授权的应用
-   * @param dto
+   * @param {RoleAuthBySystemDto} dto
    */
-  public async updateRoleAuthBySystem(dto: any) {
+  public async updateRoleAuthBySystem(dto: RoleAuthBySystemDto) {
     try {
       const { roleId, systemIds = [], type = RoleAuthType.System } = dto;
       const roleRows = await this.roleAuthRepository.find({
@@ -385,7 +388,55 @@ export class RoleService {
       // await manager.insert(UserRole, insertRoles);
     } catch (error) {
       throw new ApiException(
-        '用户角色关系分配失败' + error,
+        '用户应用权限授权失败' + error,
+        200,
+        ApiCodeEnum.PUBLIC_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 变更/添加 角色授权应用菜单权限
+   * @param {RoleAuthByMenusDto} dto
+   */
+  public async updateRoleAuthByMenus(dto: RoleAuthByMenusDto) {
+    try {
+      const { roleId, systemId, menuIds = [], type = RoleAuthType.Menu } = dto;
+      const roleMenuRows = await this.roleAuthRepository.find({
+        roleId,
+        systemId,
+        type,
+      });
+      const originMenuIds = roleMenuRows.map((e) => e.menuId);
+      const insertMenuRowIds = difference(menuIds, originMenuIds);
+      const deleteMenuRowIds = difference(originMenuIds, menuIds);
+      await this.entityManager.transaction(async (manager) => {
+        // 菜单
+        if (insertMenuRowIds.length > 0) {
+          // 有条目更新
+          const insertRows = insertMenuRowIds.map((e) => {
+            return {
+              roleId,
+              systemId,
+              type,
+              menuId: e,
+            };
+          });
+          await manager.insert(RoleAuth, insertRows);
+        }
+        if (deleteMenuRowIds.length > 0) {
+          // 有条目需要删除
+          const realDeleteRowIds = filter(roleMenuRows, (e) => {
+            return includes(deleteMenuRowIds, e.menuId);
+          }).map((e) => {
+            return e.id;
+          });
+          await manager.delete(RoleAuth, realDeleteRowIds);
+        }
+      });
+    } catch (error) {
+      throw new ApiException(
+        '角色权限点授权失败' + error,
         200,
         ApiCodeEnum.PUBLIC_ERROR,
       );

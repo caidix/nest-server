@@ -14,6 +14,8 @@ import {
   CreateRoleDto,
   CreateRoleGroupDto,
   DeleteRoleGroupDto,
+  RoleAuthByMenusDto,
+  RoleAuthBySystemDto,
   SearchRoleDto,
   SearchSystemRoleAuthDto,
   UpdateRoleDto,
@@ -152,22 +154,27 @@ export class RoleController {
 
   @Post('menu-auth-list')
   @ApiOperation({
-    summary: '获取所有角色列表',
+    summary: '获取角色在对应应用下的菜单权限',
   })
   public async getMenuAuthList(@Body() data) {
-    const { code, roleId, systemId } = data;
-    const auths = await this.roleService.getRoleAuthBySystem({
+    const { systemCode, roleId, systemId } = data;
+    const { list } = await this.systemMenuService.getSystemMenuList(
+      systemCode,
+      false,
+    );
+    const authList = await this.roleService.getRoleAuthBySystem({
       roleId,
       systemId,
     });
-    if (auths) {
-      // const _auths = auths.map((auth) => {
-      //   const menus = await this.systemMenuService.getSystemMenuList(code);
-      // });
+    const auths: number[] = [];
+    if (authList && authList.length) {
+      authList.forEach((auth) => {
+        auths.push(auth.menuId);
+      });
     }
 
     return returnClient('获取成功', ApiCodeEnum.SUCCESS, {
-      // menus,
+      list,
       auths,
     });
   }
@@ -176,8 +183,20 @@ export class RoleController {
   @ApiOperation({
     summary: '为角色绑定应用权限',
   })
-  public async updateRoleAuthBySystem(@Body() data) {
+  public async updateRoleAuthBySystem(@Body() data: RoleAuthBySystemDto) {
     await this.roleService.updateRoleAuthBySystem(data);
+    return returnClient('配置成功', ApiCodeEnum.SUCCESS);
+  }
+
+  @Post('update-auth-menus')
+  @ApiOperation({
+    summary: '为角色绑定应用下的菜单|功能点权限',
+  })
+  public async updateRoleAuthByMenus(@Body() data: RoleAuthByMenusDto) {
+    if (!data.systemId || !data.roleId) {
+      return returnClient('缺少相关参数', ApiCodeEnum.PUBLIC_ERROR);
+    }
+    await this.roleService.updateRoleAuthByMenus(data);
     return returnClient('配置成功', ApiCodeEnum.SUCCESS);
   }
 }

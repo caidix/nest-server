@@ -163,8 +163,12 @@ export class SystemMenuService {
     }
   }
 
-  /** 获取菜单列表 */
-  public async getSystemMenuList(code: string) {
+  /**
+   * 获取菜单列表
+   * @param {string} code 菜单所属的应用code
+   * @param {boolean} custom 是否将列表整理成树形结构
+   */
+  public async getSystemMenuList(code: string, custom = true) {
     try {
       const res = await this.systemMenuRepository
         .createQueryBuilder('s')
@@ -176,7 +180,9 @@ export class SystemMenuService {
         .addOrderBy('s.id', 'ASC')
         .getManyAndCount();
 
-      const treeData = listToTree(res[0], 'id', 'parentId', 'children');
+      const treeData = custom
+        ? listToTree(res[0], 'id', 'parentId', 'children')
+        : res[0];
       return { list: treeData, total: res[1] };
     } catch (error) {
       throw new ApiException(
