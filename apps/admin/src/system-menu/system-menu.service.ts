@@ -167,15 +167,24 @@ export class SystemMenuService {
    * 获取菜单列表
    * @param {string} code 菜单所属的应用code
    * @param {boolean} custom 是否将列表整理成树形结构
+   * @param {number[]} roles 是否根据角色权限读取
    */
-  public async getSystemMenuList(code: string, custom = true) {
+  public async getSystemMenuList(code: string, custom = true, roles = []) {
     try {
-      const res = await this.systemMenuRepository
+      let stepRes = this.systemMenuRepository
         .createQueryBuilder('s')
         .where('s.isDelete = :isDelete AND s.systemCode = :code', {
           isDelete: 0,
           code,
-        })
+        });
+
+      if (roles.length) {
+        stepRes = stepRes
+          .innerJoinAndSelect('role_auth', 'roleMenu', 's.id = roleMenu.menuId')
+          .andWhere('roleMenu.roleId IN (:...roles)', { roles: roles });
+      }
+
+      const res = await stepRes
         .orderBy('s.sort', 'ASC')
         .addOrderBy('s.id', 'ASC')
         .getManyAndCount();

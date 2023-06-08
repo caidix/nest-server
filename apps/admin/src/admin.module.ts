@@ -21,7 +21,7 @@ import { RoleModule } from './role/role.module';
     SystemModule,
     OrganizationModule,
     SystemMenuModule,
-    // AuthMenuModule,
+    AuthMenuModule,
     // ApiResourceModule,
     RoleModule,
   ],

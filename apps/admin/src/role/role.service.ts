@@ -21,6 +21,7 @@ import { ApiCodeEnum } from 'libs/common/utils/apiCodeEnum';
 import { RoleAuth, RoleAuthType } from '@libs/db/entity/RoleAuthEntity';
 import { System } from '@libs/db/entity/SystemEntity';
 import { difference, filter, includes, isEmpty, map } from 'lodash';
+import { UserRole } from '@libs/db/entity/UserRoleEntity';
 
 @Injectable()
 export class RoleService {
@@ -31,6 +32,8 @@ export class RoleService {
     private readonly roleRepository: Repository<Role>,
     @InjectRepository(RoleAuth)
     private readonly roleAuthRepository: Repository<RoleAuth>,
+    @InjectRepository(UserRole)
+    private readonly userRoleService: Repository<UserRole>,
     @InjectEntityManager() private entityManager: EntityManager,
     @Inject('ROOT_ROLE_ID') private roleRootId: number,
   ) {}
@@ -437,6 +440,31 @@ export class RoleService {
     } catch (error) {
       throw new ApiException(
         '角色权限点授权失败' + error,
+        200,
+        ApiCodeEnum.PUBLIC_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 获取用户所拥有的角色
+   */
+  public async getAllRolesByUser(id: number) {
+    try {
+      const res = await this.userRoleService.find({
+        where: {
+          userId: id,
+        },
+      });
+      if (!isEmpty(res)) {
+        return map(res, (v) => {
+          return v.roleId;
+        });
+      }
+      return [];
+    } catch (error) {
+      throw new ApiException(
+        '获取用户角色失败' + error,
         200,
         ApiCodeEnum.PUBLIC_ERROR,
       );

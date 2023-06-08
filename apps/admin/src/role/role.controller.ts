@@ -11,6 +11,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RoleService } from './role.service';
 import {
+  AppUserMenuDto,
   CreateRoleDto,
   CreateRoleGroupDto,
   DeleteRoleGroupDto,
@@ -198,5 +199,27 @@ export class RoleController {
     }
     await this.roleService.updateRoleAuthByMenus(data);
     return returnClient('配置成功', ApiCodeEnum.SUCCESS);
+  }
+
+  @Get('app-user-menu')
+  @ApiOperation({
+    summary: '获取该用户对于某个应用应该拥有的权限及路由',
+  })
+  public async getAppUserMenu(
+    @Query() data: AppUserMenuDto,
+    @CurrentUser() user: User,
+  ) {
+    let roles: number[] = [];
+    if (!user.isSuper) {
+      roles = await this.roleService.getAllRolesByUser(user.id);
+    }
+    const roleIds = await this.roleService.getAllRolesByUser(user.id);
+    const { list } = await this.systemMenuService.getSystemMenuList(
+      data.systemCode,
+      false,
+      roles,
+    );
+    console.log({ user, list, roleIds });
+    return returnClient('获取成功', ApiCodeEnum.SUCCESS, { list });
   }
 }

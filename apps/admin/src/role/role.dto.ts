@@ -94,3 +94,8 @@ export class RoleAuthByMenusDto {
   @ApiProperty({ title: '', example: RoleAuthType.Menu })
   type?: RoleAuthType;
 }
+
+export class AppUserMenuDto {
+  @ApiProperty({ title: '系统Code' })
+  systemCode: string;
+}
